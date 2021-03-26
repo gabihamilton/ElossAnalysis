@@ -30,8 +30,6 @@ Double_t delta_Pt2;
 
 Double_t  energy_shift;
 
-Int_t nbins;
-
 TString Target;
 TString Nuclei_Type;
 
@@ -90,10 +88,10 @@ int main(int argc, char **argv)
   Double_t Nu_min = 3.2 + Nu_bin*0.1;
   Double_t Nu_max = Nu_min + 0.1;
 
-  //Bundle = 0;//(Int_t) std::stoi(argv[4]); // in number of bundle
-  //bundle_size = 100;//(Int_t) std::stoi(argv[5]);
-  //int shift_min = Bundle*bundle_size;
-  //int shift_max = Bundle*bundle_size + bundle_size - 1;
+  Bundle = 0;//(Int_t) std::stoi(argv[4]); // in number of bundle
+  bundle_size = 100;//(Int_t) std::stoi(argv[5]);
+  int shift_min = Bundle*bundle_size;
+  int shift_max = Bundle*bundle_size + bundle_size - 1;
   
   delta_Q2 = (Q2_max-Q2_min)/N_Q2;
   delta_Phi = (Phi_max-Phi_min)/N_Phi;
@@ -105,7 +103,7 @@ int main(int argc, char **argv)
   TCut Target_cutD = "TargType==1"; //cut for Deuterium
   TCut Target_cutS = "TargType==2"; //cut for Solid Target
   
-  /*
+  
   //Simulation Cuts
   TCut Nu_cut_S = Form("Nu>%f && Nu<%f", Nu_min, Nu_max);
   TCut Q2_cut_S = Form("Q2>%f && Q2<%f", Q2_min, Q2_max);                 
@@ -114,7 +112,7 @@ int main(int argc, char **argv)
 
   TCut cuts_simulD = Target_cutD&&Q2_cut_S&&Nu_cut_S&&Phi_cut_S&&Pt2_cut_S;
   TCut cuts_simulS = Target_cutS&&Q2_cut_S&&Nu_cut_S&&Phi_cut_S&&Pt2_cut_S;
-  */
+  
 
   TCut xf_cut = "Xf>0.1"; //  Typical xF cut
   TCut Q2_cut, Nu_cut, Phi_cut, Pt2_cut, cuts_loop, xf_mod;  //Loops Cuts                           

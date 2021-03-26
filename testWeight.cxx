@@ -73,7 +73,7 @@ int main(int argc, char *argv[]){
 	Nuclei_Type = (TString) argv[1];
   	Int_t N_Nu = atoi(argv[2]);
   	Int_t n = atoi(argv[3]);  // ORDER OF THE CHEBYSHEV FUNC
-  	nbins = atoi(argv[4]);
+  	Int_t nbins = atoi(argv[4]);
 
 	//double Nu_min = 3.2 + Nu_bin*((4.2-3.2)/N_Nu); 
 	//double Nu_max = Nu_min + (4.2-3.2)/N_Nu;
@@ -143,7 +143,7 @@ int main(int argc, char *argv[]){
 
 
 	//--------Starting Loop Over Nu bins---------//
-	for(Nu_bin = 0; Nu_bin < N_Nu; Nu_bin++){
+	for(Int_t Nu_bin = 0; Nu_bin < N_Nu; Nu_bin++){
 
 		double Nu_min = 3.2 + Nu_bin*((4.2-3.2)/N_Nu); 
 		double Nu_max = Nu_min + (4.2-3.2)/N_Nu;
@@ -289,8 +289,8 @@ int main(int argc, char *argv[]){
 
 		          		dataS.push_back((Zh*Nu)+energy_shift); 	 	 	// Unbinned KS
 		      			weightS.push_back(1./w);						// Weighted Unbinned
-		          		histograms[i]->Fill(Zh*Nu+energy_shift); 		// Binned KS
-		      			histogramsW[i]->Fill(Zh*Nu+energy_shift, 1./w);	// Weighted Binned
+		          		histograms[shift]->Fill(Zh*Nu+energy_shift); 		// Binned KS
+		      			histogramsW[shift]->Fill(Zh*Nu+energy_shift, 1./w);	// Weighted Binned
 		        	}                                                
 		      	}
 	    	}
@@ -331,7 +331,7 @@ int main(int argc, char *argv[]){
 		    //----------UNBINNED KOLMOGOROV TEST----------//
 		    double pKS = TMath::KolmogorovTest(nD, &dataD[0], nS, &dataS[0], "D");
 		    //gpKS->SetPoint(i, i, -1*TMath::Log10(pKS));
-		    gpKS->SetPoint(i, i, pKS);
+		    gpKS->SetPoint(shift, shift, pKS);
 
 
 
@@ -368,10 +368,10 @@ int main(int argc, char *argv[]){
 		        }
 		    }
 
-		    Double_t Pz = rdmax * TMath::Sqrt(nD*nS/(nD+nS));
+		    Double_t Pz = d * TMath::Sqrt(nD*nS/(nD+nS));
    			double P_WKS = TMath::KolmogorovProb(Pz);
    			//gpKS->SetPoint(i, i, -1*TMath::Log10(pKS));
-	    	gP_WKS->SetPoint(i, i, P_WKS);
+	    	gP_WKS->SetPoint(shift, shift, P_WKS);
 
 
 		    //WEIGHTED KOLMOGOROV TEST :: ROOT IMPLEMENTATION
@@ -418,27 +418,27 @@ int main(int argc, char *argv[]){
 		    	Double_t z = rdmax * TMath::Sqrt(nD*nS/(nD+nS));
        			double pWKS = TMath::KolmogorovProb(z);
        			//gpKS->SetPoint(i, i, -1*TMath::Log10(pKS));
-		    	gpWKS->SetPoint(i, i, pWKS);
+		    	gpWKS->SetPoint(shift, shift, pWKS);
 		    }
 
 
 
 		    //-----Binned Chi2 and Kolmogorov-Smirnov Test-----//
 		    D->Scale(1.0/D->Integral());
-		    histograms[i]->Scale(1.0/histograms[i]->Integral());
+		    histograms[shift]->Scale(1.0/histograms[shift]->Integral());
 		    //double pCSbinned = D->Chi2Test(histograms[i], "NORM");
-		    double pKSbinned = D->KolmogorovTest(histograms[i], "D");
+		    double pKSbinned = D->KolmogorovTest(histograms[shift], "D");
 		    //gpCSb->SetPoint(i, i, -1*TMath::Log10(pCSbinned));
 		    //gpKSb->SetPoint(i, i, -1*TMath::Log10(pKSbinned));
 		    //gpCSb->SetPoint(i, i, pCSbinned);
-		    gpKSb->SetPoint(i, i, pKSbinned);
+		    gpKSb->SetPoint(shift, shift, pKSbinned);
 
 		    //-----Binned Weighted KS Test-----//
 		    DW->Scale(1.0/DW->Integral());
-		    histogramsW[i]->Scale(1.0/histogramsW[i]->Integral());
-		    double pWKSbinned = DW->KolmogorovTest(histogramsW[i], "D");
+		    histogramsW[shift]->Scale(1.0/histogramsW[shift]->Integral());
+		    double pWKSbinned = DW->KolmogorovTest(histogramsW[shift], "D");
 		    //gWpKSb->SetPoint(i, i, -1*TMath::Log10(WpKSbinned));
-		    gpWKSb->SetPoint(i, i, pWKSbinned);	
+		    gpWKSb->SetPoint(shift, shift, pWKSbinned);	
 	  	}//-------End of the Loop over shifts------//
 
 	  	std::cout<< "END LOOP OVER SHIFTS" << std::endl;
@@ -575,7 +575,7 @@ int main(int argc, char *argv[]){
 	   	legend->Draw();
 	    c1->BuildLegend();
 		c1->SaveAs(Form("ROOTW_PART%d_Spectrum_"+Nuclei_Type+"_nubin%d_%d_Ecut_%d.pdf", F, Nu_bin, nentries, int(E_max)));
-*/
+		*/
 		fout->cd();
 
 		histograms[i_KS]->SetName(Form("KS_%d", Nu_bin));
@@ -657,7 +657,7 @@ int main(int argc, char *argv[]){
 	multi->GetYaxis()->SetTitle("dE [MeV]"); 
 
 	canvas->BuildLegend();
-	canvas->SaveAs(Form("output/Eloss_"+Nuclei_Type+"_nubin%d_%d_Ecut%d_cheb%d_Ebins%d.pdf", Nu_bin, nentries, int(E_max), n, nbins));
+	canvas->SaveAs(Form("output/Eloss_"+Nuclei_Type+"_Nu%d_%d_Ecut%d_cheb%d_Ebins%d.pdf", N_Nu, nentries, int(E_max), n, nbins));
 
 	std::cout<<" ABOUT TO CLOSE " << std::endl;
 	fout->Close();
