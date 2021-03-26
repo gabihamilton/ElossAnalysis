@@ -48,7 +48,7 @@ const double E_min = 0.5;  			// Maximum Energy
 const double limit_xf = 0.1;		// xF cut
 const int nshift_E = 99;			// Number of shifts in Energy
 const double step_E = 1.0/1000.0;	// Size of Shifts in Energy
-const int nbins = 100;				// Number of Energy bins
+//const int nbins = 100;				// Number of Energy bins
 
 const Double_t Q2_min = 1.;
 const Double_t Q2_max = 4.;
@@ -73,6 +73,7 @@ int main(int argc, char *argv[]){
 	Nuclei_Type = (TString) argv[1];
   	Int_t N_Nu = atoi(argv[2]);
   	Int_t n = atoi(argv[3]);  // ORDER OF THE CHEBYSHEV FUNC
+  	nbins = atoi(argv[4]);
 
 	//double Nu_min = 3.2 + Nu_bin*((4.2-3.2)/N_Nu); 
 	//double Nu_max = Nu_min + (4.2-3.2)/N_Nu;
@@ -131,7 +132,7 @@ int main(int argc, char *argv[]){
 	//Int_t nentries = 100000;
 
 	//-----Creating output file-----//	
-	TFile *fout = new TFile(Form("ROOT_"+Nuclei_Type+"_xFmod_Ecut%d_%dbins_cheb%d_Ebins%d.root", int(E_max), N_Nu, n, nbins), "RECREATE");
+	TFile *fout = new TFile(Form("output/"+Nuclei_Type+"_xFmod_Ecut%d_%dbins_cheb%d_Ebins%d.root", int(E_max), N_Nu, n, nbins), "RECREATE");
 
 	//-----Creating the Graphs for the Eloss Shift Values------//
 	TGraph *gElossKS = new TGraph();  //  Graph for Eloss values for the KS test
@@ -483,7 +484,7 @@ int main(int argc, char *argv[]){
 		multi->GetYaxis()->SetTitle("p_{0}"); //"-Log(p_{0})"
 		
 		canvas->BuildLegend();
-		canvas->SaveAs(Form("Prob_"+Nuclei_Type+"_nubin%d_%d_%dEcut%d_cheb%d_Ebins%d.pdf", Nu_bin, nentries, int(E_min), int(E_max*100), n, nbins));
+		canvas->SaveAs(Form("output/Prob_"+Nuclei_Type+"_nubin%d_%d_%dEcut%d_cheb%d_Ebins%d.pdf", Nu_bin, nentries, int(E_min), int(E_max*100), n, nbins));
 
 	
 		//-----ELOSS HISTOGRAMS PLOTS-----//
@@ -656,7 +657,7 @@ int main(int argc, char *argv[]){
 	multi->GetYaxis()->SetTitle("dE [MeV]"); 
 
 	canvas->BuildLegend();
-	canvas->SaveAs(Form("Eloss_"+Nuclei_Type+"_nubin%d_%d_Ecut%d_cheb%d_Ebins%d.pdf", Nu_bin, nentries, int(E_max), n, nbins));
+	canvas->SaveAs(Form("output/Eloss_"+Nuclei_Type+"_nubin%d_%d_Ecut%d_cheb%d_Ebins%d.pdf", Nu_bin, nentries, int(E_max), n, nbins));
 
 	std::cout<<" ABOUT TO CLOSE " << std::endl;
 	fout->Close();
