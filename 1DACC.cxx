@@ -82,8 +82,8 @@ int main(int argc, char **argv)
   //Input variables
 
   Nuclei_Type = (TString) argv[1];  // C for Carbon, Fe for Iron and Pb for Lead
-  Nu_bin = atoi(argv[2]);           // Nu bin Index
-  N_Nu = atoi(argv[3]);             // Number of Nu bins
+  N_Nu = atoi(argv[2]);             // Number of Nu bins
+  Nu_bin = atoi(argv[3]);           // Nu bin Index
   
   Double_t Nu_min = 3.2 + Nu_bin*0.1;
   Double_t Nu_max = Nu_min + 0.1;
