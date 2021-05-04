@@ -212,7 +212,7 @@ int main(int argc, char **argv)
 
 
   //  CREATING THE OUTPUT FILE
-  TFile *plots = new TFile(Form("output/fout_"+Nuclei_Type+"_nubin%d.root",Nu_bin),"RECREATE");
+  TFile *plots = new TFile(Form("output/2Dfout_"+Nuclei_Type+"_%dnubin%d.root", N_Nu, Nu_bin),"RECREATE");
   //cout << "OK" << endl;
 
   //--------CREATING HISTOGRAMS--------//
