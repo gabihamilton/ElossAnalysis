@@ -125,7 +125,7 @@ int main(int argc, char *argv[]){
 	tree->SetBranchAddress("NmbPion",&NmbPion);
 
 	//Int_t nentries = tree->GetEntries();
-	Int_t nentries = 1000;
+	Int_t nentries = 10000;
 
 	//-----Creating output file-----//	
 	TFile *fout = new TFile(Form("output/KS1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
@@ -189,10 +189,12 @@ int main(int argc, char *argv[]){
 
 		//TVirtualFitter::SetMaxIterations(100000);
 
-		TH1F *DAcc = (TH1F*)acc->Get(Form("acceptance_histoD%d", Nu_bin)); // Getting the right acc histogram
+		TH1F *DAcc = (TH1F*)acc->Get(Form("acc_D_nubin%d", Nu_bin)); // Getting the right acc histogram
 		for (int i = 0; i <=n; ++i) funcD->SetParameter(i,1); 
 
 		DAcc->Fit(funcD, "R");
+		cout << "OK" << endl;
+
 
 		//gStyle->SetOptFit(1);
 		//DAcc->Draw();
@@ -214,7 +216,7 @@ int main(int argc, char *argv[]){
 
    			cout << "Fitting the Solid Target Shift: " << shift << endl;
 
-			TH1F *h = (TH1F*)acc->Get(Form("acceptance_histo"+Nuclei_Type+"_shift%d_%d", shift, Nu_bin)); // Getting the right acc histogram
+			TH1F *h = (TH1F*)acc->Get(Form("acc_"+Nuclei_Type+"_shift%d_nubin%d", shift, Nu_bin)); // Getting the right acc histogram
 			for (int i = 0; i <=n; ++i) funcS->SetParameter(i,1); 
 
     		h->Fit(funcS, "R");
@@ -516,7 +518,7 @@ int main(int argc, char *argv[]){
 		cout << "ELOSS VALUE FOR KS: " << i_KS << "   PROB: " << elossKS << endl;
 		cout << "ELOSS VALUE FOR WKS: " << i_WKS << "   PROB: " << elossWKS << endl;
 		cout << "ELOSS VALUE FOR KSb: " << i_KSb << "   PROB: " << elossKSb << endl;
-		cout << "ELOSS VALUE FOR WKS: " << i_WKSb << "   PROB: " << elossWKSb << endl;
+		cout << "ELOSS VALUE FOR WKSb: " << i_WKSb << "   PROB: " << elossWKSb << endl;
 		cout << "ELOSS VALUE FOR Python: " << i_P << "   PROB: " << elossP << endl;
 
 
