@@ -18,7 +18,7 @@ LDFLAGS   = -O2 $(ROOTLDFLAGS)
 INCLUDES  := -I/$(ROOTINCDIR)
 LIBS      := $(ROOTLIBS)
 
-FILES := newNuCode testWeight 1DACC 2DACC 1DKS
+FILES := newNuCode testWeight 1DACC 2DACC 1DKS 2DKS
 
 all: $(FILES)
 
