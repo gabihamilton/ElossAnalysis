@@ -81,8 +81,8 @@ int main(int argc, char *argv[]){
 	//nubin_label << Nu_min  <<" < #nu < " << Nu_max << " GeV ";
 	cout<< "The cut on Xf is " << limit_xf << endl;
 	//------Opening data files-----//
-	TFile *file = new TFile(Form("/Users/gbibim/Documents/data/" + Nuclei_Type + "_data.root"));
-	//TFile *file = new TFile(Form("/user/h/hamilton/ThesisProj/data/" + Nuclei_Type + "_data.root"));
+	//TFile *file = new TFile(Form("/Users/gbibim/Documents/data/" + Nuclei_Type + "_data.root"));
+	TFile *file = new TFile(Form("/user/h/hamilton/ThesisProj/data/" + Nuclei_Type + "_data.root"));
 
 	//TFile* fout = new TFile(Form("OUTPUT/Xfmod_Ehist_"+Nuclei_Type+"_nubin%d_.root",Nu_bin),"RECREATE");
 
