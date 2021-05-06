@@ -124,8 +124,8 @@ int main(int argc, char *argv[]){
 	tree->SetBranchAddress("deltaZ",&deltaZ);
 	tree->SetBranchAddress("NmbPion",&NmbPion);
 
-	//Int_t nentries = tree->GetEntries();
-	Int_t nentries = 10000;
+	Int_t nentries = tree->GetEntries();
+	//Int_t nentries = 1000000;
 
 	//-----Creating output file-----//	
 	TFile *fout = new TFile(Form("output/KS1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
