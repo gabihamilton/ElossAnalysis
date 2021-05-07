@@ -100,6 +100,12 @@ int main(int argc, char **argv)
 
   TCut Target_cutD = "TargType==1"; //cut for Deuterium
   TCut Target_cutS = "TargType==2"; //cut for Solid Target
+
+  //Simulation Cuts
+  TCut Nu_cut_S = Form("Nu>%f && Nu<%f", Nu_min, Nu_max);
+  TCut Q2_cut_S = Form("Q2>%f && Q2<%f", Q2_min, Q2_max);                 
+  TCut Phi_cut_S = Form("PhiPQ>%f && PhiPQ<%f", Phi_min, Phi_max);
+  TCut Pt2_cut_S = Form("Pt*Pt>%f && Pt*Pt<%f", Pt2_min, Pt2_max);
   
   TCut cuts_simulD = Target_cutD&&Q2_cut_S&&Nu_cut_S&&Phi_cut_S&&Pt2_cut_S;
   TCut cuts_simulS = Target_cutS&&Q2_cut_S&&Nu_cut_S&&Phi_cut_S&&Pt2_cut_S;
