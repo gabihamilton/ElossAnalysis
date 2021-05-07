@@ -125,7 +125,7 @@ int main(int argc, char *argv[]){
 	tree->SetBranchAddress("NmbPion",&NmbPion);
 
 	Int_t nentries = tree->GetEntries();
-	//Int_t nentries = 1000000;
+	//Int_t nentries = 1000;
 
 	//-----Creating output file-----//	
 	TFile *fout = new TFile(Form("output/KS1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
@@ -187,6 +187,8 @@ int main(int argc, char *argv[]){
 		}
 
 
+		TFile *fileFit = new TFile(Form("output/Fits1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
+
 
 		//-------Fitting Deuterium:--------//
 		cout << "Fitting Deuterium" << endl;
@@ -200,13 +202,13 @@ int main(int argc, char *argv[]){
 		cout << "OK" << endl;
 
 
-		//gStyle->SetOptFit(1);
+		gStyle->SetOptFit(1);
 		//DAcc->Draw();
 	
 		// Saving fit
-		//fout->cd();
-		//DAcc->SetName(Form("fitD_"+Nuclei_Type+"_nubin%d_Q2bin%d", Nu_bin, Q2_bin));
-		//DAcc->Write();
+		fileFit->cd();
+		DAcc->SetName(Form("fitD_"+Nuclei_Type+"_nubin%d", Nu_bin));
+		DAcc->Write();
 
 		funcD->GetParameters(&parD[0]);  // Saving Fit Parameters
 		//cout << parD[Q2_bin][0] << "  " << parD[Q2_bin][1] << "  " << parD[Q2_bin][2] << "  " << parD[Q2_bin][3]  endl;
@@ -229,9 +231,9 @@ int main(int argc, char *argv[]){
 			//h->Draw();
 		
 			// Saving fit
-			//fout->cd();
-			//h->SetName(Form("fit_"+Nuclei_Type+"_nubin%d_Q2bin%d_shift%d", Nu_bin, Q2_bin, i));
-			//h->Write();
+			fileFit->cd();
+			h->SetName(Form("fit_"+Nuclei_Type+"_nubin%d_shift%d", Nu_bin, shift));
+			h->Write();
 
     		funcS->GetParameters(&parS[0]);	    		
 	    	
