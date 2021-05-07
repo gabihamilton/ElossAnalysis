@@ -135,7 +135,8 @@ int main(int argc, char *argv[]){
 	TGraph *gElossWKS = new TGraph(); //  Graph for Eloss values fot the Weighted KS test
 	TGraph *gElossKSb = new TGraph(); //  Graph for Eloss values for the Binned KS test
 	TGraph *gElossWKSb = new TGraph(); // Graph for Eloss values for the Binned Weighted KS test
-	TGraph *gElossP = new TGraph();
+	TGraph *gElossP = new TGraph();   
+	TGraph *gElossA = new TGraph();
 
 
 	//--------Starting Loop Over Nu bins---------//
@@ -153,6 +154,7 @@ int main(int argc, char *argv[]){
 		TGraph *gpKSb = new TGraph();     	// Graph for the Binned KS Test
 		TGraph *gpWKSb = new TGraph();    	// Graph for the Binned Weighted KS Test
 		TGraph *gP_WKS = new TGraph();		// Graph for the Unbinned Weighted KS PYTHON
+		TGraph *gpKSAcc = new TGraph();     // Graph for the Accepted KS test
 
 		// Parameters arrays for Fits
 		Double_t parD[n+1];
@@ -183,6 +185,8 @@ int main(int argc, char *argv[]){
 			histogramsW[i] = new TH1F(Form("Nuclei_bin%d",i),Form("Nuclei_bin%d",i),nbins,E_min,E_max);
 			histogramsW[i]->Sumw2();
 		}
+
+
 
 		//-------Fitting Deuterium:--------//
 		cout << "Fitting Deuterium" << endl;
@@ -259,7 +263,6 @@ int main(int argc, char *argv[]){
 		      		weightD.push_back(w);		// Weighted Unbinned
 		        	D->Fill(Zh*Nu);				// Binned KS
 		      		DW->Fill(Zh*Nu, w);			// Weighted Binned
-
 		      	}
 
 		      	// Solid Target
@@ -272,9 +275,9 @@ int main(int argc, char *argv[]){
 		        		double w = 1./(funcS->Eval(Zh*Nu+energy_shift, 0, 0));  //weight for E value
 
 		          		dataS.push_back((Zh*Nu)+energy_shift); 	 	 	// Unbinned KS
-		      			weightS.push_back(1./w);						// Weighted Unbinned
+		      			weightS.push_back(w);						// Weighted Unbinned
 		          		histograms[shift]->Fill(Zh*Nu+energy_shift); 		// Binned KS
-		      			histogramsW[shift]->Fill(Zh*Nu+energy_shift, 1./w);	// Weighted Binned
+		      			histogramsW[shift]->Fill(Zh*Nu+energy_shift, w);	// Weighted Binned
 		        	}                                                
 		      	}
 	    	}
@@ -407,7 +410,7 @@ int main(int argc, char *argv[]){
 
 
 
-		    //-----Binned Chi2 and Kolmogorov-Smirnov Test-----//
+		    //-----Binned Kolmogorov-Smirnov Test-----//
 		    D->Scale(1.0/D->Integral());
 		    histograms[shift]->Scale(1.0/histograms[shift]->Integral());
 		    //double pCSbinned = D->Chi2Test(histograms[i], "NORM");
@@ -421,6 +424,18 @@ int main(int argc, char *argv[]){
 		    double pWKSbinned = DW->KolmogorovTest(histogramsW[shift], "D");
 		    //gWpKSb->SetPoint(i, i, -1*TMath::Log10(WpKSbinned));
 		    gpWKSb->SetPoint(shift, shift, pWKSbinned);	
+
+		    //-----Binned Accepted KS Test-----//
+
+			TH1F *DCorr = (TH1F*)acc->Get("D"); // Getting the corrected D Histograms
+			TH1F *Solid = (TH1F*)acc->Get(Form("Nuclei_shift%d", shift)); // getting the corrected Nuclei histogram
+			DCorr->GetXaxis()->SetRangeUser(0.5,2.0);
+			Solid->GetXaxis()->SetRangeUser(0.5,2.0);
+		    DCorr->Scale(1.0/DCorr->Integral());
+		    Solid->Scale(1.0/Solid->Integral());
+		    double pKSAcc = DCorr->KolmogorovTest(Solid, "D");
+		    gpKSAcc->SetPoint(shift, shift, pKSAcc);
+
 	  	}//-------End of the Loop over shifts------//
 
 	  	std::cout<< "END LOOP OVER SHIFTS" << std::endl;
@@ -431,6 +446,7 @@ int main(int argc, char *argv[]){
 		gpKSb->SetName(Form("pKSb_"+Nuclei_Type+"_nubin%d", Nu_bin));
 		gpWKSb->SetName(Form("pWKSb_"+Nuclei_Type+"_nubin%d", Nu_bin));
 		gP_WKS->SetName(Form("P_WKS_"+Nuclei_Type+"_nubin%d", Nu_bin));
+		gpKSAcc->SetName(Form("pKSAcc_"+Nuclei_Type+"_nubin%d", Nu_bin));
 
 
 		gpKS->SetLineColor(4);   
@@ -438,18 +454,21 @@ int main(int argc, char *argv[]){
 		gpKSb->SetLineColor(6); 
 		gpWKSb->SetLineColor(2);
 		gP_WKS->SetLineColor(3); //green
+		gpKSAcc->SetLineColor(28);
 
 		gpKS->SetLineWidth(3);
 		gpWKS->SetLineWidth(3);
 		gpKSb->SetLineWidth(3);
 		gpWKSb->SetLineWidth(3);
 		gP_WKS->SetLineWidth(3);
+		gpKSAcc->SetLineWidth(3);
 
 		gpKS->SetTitle("Unbinned KS");
 		gpWKS->SetTitle("Weighted Unbinned KS");
 		gpKSb->SetTitle("Binned KS");
 		gpWKSb->SetTitle("Weighted Binned KS"); 
 		gP_WKS->SetTitle("Python Weighted KS");
+		gpKSAcc->SetTitle("Acc. Corrected KS");
 
 		TCanvas *canvas = new TCanvas();
 		TMultiGraph *multi = new TMultiGraph();
@@ -458,6 +477,7 @@ int main(int argc, char *argv[]){
 		multi->Add(gpKSb,"L");
 		multi->Add(gpWKSb,"L");
 		multi->Add(gP_WKS,"L");
+		multi->Add(gpKSAcc, "L");
 
 		multi->Draw("AL");
 		multi->SetMaximum(1.2);
@@ -476,11 +496,13 @@ int main(int argc, char *argv[]){
 		Double_t elossKSb=0;
 		Double_t elossWKSb=0;
 		Double_t elossP=0;
+		Double_t elossA=0;
 		Int_t i_KS=0;
 		Int_t i_WKS=0;
 		Int_t i_KSb=0;
 		Int_t i_WKSb=0;
 		Int_t i_P=0;
+		Int_t i_A=0;
 
 		for (int i = 0; i < nshift_E; ++i){
 			Double_t x, y;
@@ -514,12 +536,19 @@ int main(int argc, char *argv[]){
 				elossP=y;
 				i_P = i;
 			}
+
+			gpKSAcc->GetPoint(i, x, y); 
+			if(y>elossA){
+				elossA=y;
+				i_A = i;
+			}
 		}
 		cout << "ELOSS VALUE FOR KS: " << i_KS << "   PROB: " << elossKS << endl;
 		cout << "ELOSS VALUE FOR WKS: " << i_WKS << "   PROB: " << elossWKS << endl;
 		cout << "ELOSS VALUE FOR KSb: " << i_KSb << "   PROB: " << elossKSb << endl;
 		cout << "ELOSS VALUE FOR WKSb: " << i_WKSb << "   PROB: " << elossWKSb << endl;
 		cout << "ELOSS VALUE FOR Python: " << i_P << "   PROB: " << elossP << endl;
+		cout << "ELOSS VALUE FOR Acc: " << i_A << "   PROB: " << elossA << endl;
 
 
 		//-----Energy spectra distributions-----//
@@ -581,12 +610,16 @@ int main(int argc, char *argv[]){
 		DW->SetName(Form("Weighted_D_%d", Nu_bin));
 		DW->Write();
 
+		DAcc->SetName(Form("Acc_Corr_D_%d", Nu_bin));
+		DAcc->Write();
+
 	    //------- ELOSS GRAPHS -------//
 	    gElossKS->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_KS);
 	    gElossWKS->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_WKS);
 	    gElossKSb->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_KSb);
 	    gElossWKSb->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_WKSb);
 	    gElossP->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_P);
+	    gElossA->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_A);
 	}//  END OF LOOP OVER NU BINS
 
 
@@ -598,30 +631,35 @@ int main(int argc, char *argv[]){
 	gElossKSb->SetName(Form("ElossKSb_"+Nuclei_Type));
 	gElossWKSb->SetName(Form("ElossWKS_"+Nuclei_Type));
 	gElossP->SetName(Form("ElossP_"+Nuclei_Type));
+	gElossA->SetName(Form("ElossP_"+Nuclei_Type));
 
 	gElossKS->Write();
 	gElossWKS->Write();
 	gElossKSb->Write();
 	gElossWKSb->Write();
 	gElossP->Write();
+	gElossA->Write();
 
 	gElossKS->SetMarkerColor(4);    
 	gElossWKS->SetMarkerColor(1);
 	gElossKSb->SetMarkerColor(6);   
 	gElossWKSb->SetMarkerColor(2); 
-	gElossP->SetMarkerColor(3); 
+	gElossP->SetMarkerColor(3);
+	gElossA->SetMarkerColor(28); 
 
 	gElossKS->SetMarkerStyle(20);
 	gElossWKS->SetMarkerStyle(21);
 	gElossKSb->SetMarkerStyle(22);
 	gElossWKSb->SetMarkerStyle(23);
 	gElossP->SetMarkerStyle(21);
+	gElossA->SetMarkerStyle(21);
 
 	gElossKS->SetTitle("Unbinned KS");
 	gElossWKS->SetTitle("Weighted Unbinned KS");
 	gElossKSb->SetTitle("Binned KS");
 	gElossWKSb->SetTitle("Weighted Binned KS");
 	gElossP->SetTitle("Python Weighted");
+	gElossA->SetTitle("Acc Corr KS");
 
 	TCanvas *canvas = new TCanvas();
 	TMultiGraph *multi = new TMultiGraph();
@@ -630,6 +668,7 @@ int main(int argc, char *argv[]){
 	multi->Add(gElossKSb,"");
 	multi->Add(gElossWKSb, "");
 	multi->Add(gElossP, "");
+	multi->Add(gElossA, "");
 
 	multi->Draw("AP");
 	multi->Write();
