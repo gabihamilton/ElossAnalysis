@@ -289,8 +289,8 @@ int main(int argc, char **argv)
     // XF MODIFIED CUT
     TCut xf_mod = Form("((Nu + 0.9385)*(TMath::Sqrt((P+%f)*(P+%f)-(P+%f)*(TMath::Sqrt(Pt2)/P)*(P+%f)*(TMath::Sqrt(Pt2)/P))-TMath::Sqrt(Q2+Nu*Nu)*(Zh+%f/Nu)*Nu/(Nu+0.9385))/TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2))/((TMath::Sqrt(TMath::Power(TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)*TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)-0.9392*0.9392+0.1395*0.1395,2)-4.*0.1395*0.1395*TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)*TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2))/2./TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)))>0.1", energy_shift, energy_shift, energy_shift, energy_shift, energy_shift); \
 
-    cuts_loop=Q2_cut_S&&Nu_cut&&Phi_cut_S&&Pt2_cut_S&&Target_cutS&&xf_mod;   //NO OLVIDARSE EL XF MOD CUT
-    TCut cut_dataS=Q2_cut_S&&Nu_cut&&Phi_cut_S&&Pt2_cut_S&&xf_mod;
+    cuts_loop=Q2_cut_S&&Nu_cut&&Phi_cut_S&&Pt2_cut_S&&xf_mod;   //NO OLVIDARSE EL XF MOD CUT
+    TCut cut_dataS=Q2_cut_S&&Nu_cut&&Phi_cut_S&&Pt2_cut_S&&xf_mod&&Target_cutS;
     //TCut cut = Q2_cut&&Nu_cut&&Target_cutS;
 
     TH1F *data_histo = new TH1F("data_histo","",nbins,E_min,E_max);
