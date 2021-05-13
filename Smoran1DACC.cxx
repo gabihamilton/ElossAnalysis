@@ -145,7 +145,7 @@ int main(int argc, char **argv)
   reconstructed_D->SetBranchStatus("Pt2",1);
   reconstructed_D->SetBranchStatus("Xf",1);
   reconstructed_D->SetBranchStatus("Zh",1);
-  reconstructed_D->SetBranchStatus("TargType",1);
+  //reconstructed_D->SetBranchStatus("TargType",1);
   //reconstructed_D->SetBranchStatus("W",1);
   reconstructed_D->SetBranchStatus("P",1);
 
@@ -164,7 +164,7 @@ int main(int argc, char **argv)
   reconstructed_S->SetBranchStatus("Pt2",1);
   reconstructed_S->SetBranchStatus("Xf",1);
   reconstructed_S->SetBranchStatus("Zh",1);
-  reconstructed_S->SetBranchStatus("TargType",1);
+  //reconstructed_S->SetBranchStatus("TargType",1);
   //reconstructed_S->SetBranchStatus("W",1);
   reconstructed_S->SetBranchStatus("P",1);
 
@@ -173,7 +173,7 @@ int main(int argc, char **argv)
 
   // THROWN FOR DEUTERIUM
   TChain *thrown_D = new TChain("ntuple_thrown");
-  thrown_D->Add(Form(f_location+"simul/D" + fs_ext));
+  thrown_D->Add(Form(f_location+"simul/D2" + fs_ext));
   
   thrown_D->SetBranchStatus("*",0);
   thrown_D->SetBranchStatus("Q2",1);
@@ -182,7 +182,7 @@ int main(int argc, char **argv)
   thrown_D->SetBranchStatus("Pt2",1);
   thrown_D->SetBranchStatus("Xf",1);
   thrown_D->SetBranchStatus("Zh",1);
-  thrown_D->SetBranchStatus("TargType",1);
+  //thrown_D->SetBranchStatus("TargType",1);
   //thrown_D->SetBranchStatus("W",1);
   thrown_D->SetBranchStatus("P",1);
 
@@ -200,7 +200,7 @@ int main(int argc, char **argv)
   thrown_S->SetBranchStatus("Pt2",1);
   thrown_S->SetBranchStatus("Xf",1);
   thrown_S->SetBranchStatus("Zh",1);
-  thrown_S->SetBranchStatus("TargType",1);
+  //thrown_S->SetBranchStatus("TargType",1);
   //thrown_S->SetBranchStatus("W",1);
   thrown_S->SetBranchStatus("P",1);
 
@@ -232,13 +232,14 @@ int main(int argc, char **argv)
   Nu_cut = Form("Nu>%f && Nu<%f", Nu_min, Nu_max);  //  Cut for Nu bin
 
   //----ACCEPTANCE FOR DEUTERIUM-----/
-  cuts_loop=Phi_cut_S&&Pt2_cut_S&&Q2_cut_S&&Nu_cut&&Target_cutD&&xf_cut;
+  cuts_loop=Phi_cut_S&&Pt2_cut_S&&Q2_cut_S&&Nu_cut&&xf_cut;
+  TCut cut_data=Phi_cut_S&&Pt2_cut_S&&Q2_cut_S&&Nu_cut_S&&Target_cutD&&xf_cut;
 
   TH1F *data_histo = new TH1F("data_histo","",nbins,E_min,E_max);
   TH1F *thrown_histo = new TH1F("thrown_histo","",nbins,E_min,E_max);
   TH1F *reconstructed_histo = new TH1F("reconstructed_histo","",nbins,E_min,E_max);
 
-  data->Draw("Zh*Nu>>data_histo",cuts_loop,"goff");
+  data->Draw("Zh*Nu>>data_histo",cut_data,"goff");
   data_histo->Sumw2();
 
   thrown_D->Draw("Zh*Nu>>thrown_histo",cuts_loop,"goff");
@@ -288,7 +289,8 @@ int main(int argc, char **argv)
     // XF MODIFIED CUT
     TCut xf_mod = Form("((Nu + 0.9385)*(TMath::Sqrt((P+%f)*(P+%f)-(P+%f)*(TMath::Sqrt(Pt2)/P)*(P+%f)*(TMath::Sqrt(Pt2)/P))-TMath::Sqrt(Q2+Nu*Nu)*(Zh+%f/Nu)*Nu/(Nu+0.9385))/TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2))/((TMath::Sqrt(TMath::Power(TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)*TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)-0.9392*0.9392+0.1395*0.1395,2)-4.*0.1395*0.1395*TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)*TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2))/2./TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)))>0.1", energy_shift, energy_shift, energy_shift, energy_shift, energy_shift); \
 
-    cuts_loop=Q2_cut&&Nu_cut&&Phi_cut&&Pt2_cut&&Target_cutS&&xf_mod;   //NO OLVIDARSE EL XF MOD CUT
+    cuts_loop=Q2_cut_S&&Nu_cut&&Phi_cut_S&&Pt2_cut_S&&Target_cutS&&xf_mod;   //NO OLVIDARSE EL XF MOD CUT
+    TCut cut_dataS=Q2_cut_S&&Nu_cut&&Phi_cut_S&&Pt2_cut_S&&xf_mod;
     //TCut cut = Q2_cut&&Nu_cut&&Target_cutS;
 
     TH1F *data_histo = new TH1F("data_histo","",nbins,E_min,E_max);
@@ -302,7 +304,7 @@ int main(int argc, char **argv)
     //Xf->SetName(Form("Xf_shift%d_%d%d", shift, Nu_bin, j));
     //Xf->Write();
      
-    data->Draw(Form("(Nu*Zh)+%f>>data_histo", energy_shift), cuts_loop, "goff");
+    data->Draw(Form("(Nu*Zh)+%f>>data_histo", energy_shift), cut_dataS, "goff");
     data_histo->Sumw2();
 
     thrown_S->Draw(Form("(Nu*Zh)+%f>>thrown_histo", energy_shift), cuts_loop, "goff");
