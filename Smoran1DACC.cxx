@@ -122,7 +122,7 @@ int main(int argc, char **argv)
 
   // DATA NTUPLE
   TChain *data = new TChain("ntuple_data");
-  data->Add(Form(f_location + "data/" Nuclei_Type + fd_ext));
+  data->Add(Form(f_location + "data/" + Nuclei_Type + fd_ext));
   data->SetBranchStatus("*",0);
   data->SetBranchStatus("Q2",1);
   data->SetBranchStatus("Nu",1);
