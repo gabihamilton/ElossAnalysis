@@ -43,11 +43,11 @@ using namespace std;
 
 //------PARAMETERS-----//
 //const int N_Nu = 5;  // number of Nu bins
-const double E_max = 100;//2.0;       // Minimum Energy
+const double E_max = 2500;//2.0;       // Minimum Energy     MeV
 const double E_min = 0;//0.5;       // Maximum Energy
 const double limit_xf = 0.1;    // xF cut
-const int nshift_E = 10;      // Number of shifts in Energy
-const double step_E = 1.0;//1000.0; // Size of Shifts in Energy
+const int nshift_E = 100;      // Number of shifts in Energy
+const double step_E = 2.5;//1000.0; // Size of Shifts in Energy in MeV
 //const int nbins = 100;        // Number of Energy bins
 
 TRandom3* r0 = new TRandom3();
@@ -66,6 +66,11 @@ double Calculate_Modified_Xf(Float_t Shift, Float_t Nu, Float_t P, Float_t Pt, F
     return xf;
 }
 
+double Efficiency(double x, double x0, double a, double b)
+{
+  return a / (1 + TMath::Exp(-b*(x-x0)));
+}
+
 int main(int argc, char *argv[]){
 
   
@@ -75,9 +80,9 @@ int main(int argc, char *argv[]){
   //double Nu_min = 3.2 + Nu_bin*((4.2-3.2)/N_Nu); 
   //double Nu_max = Nu_min + (4.2-3.2)/N_Nu;
 
-  Int_t N_EXPS = 5;
+  Int_t N_EXPS = 10;
   //Int_t N = 10000;
-  double x, y, w;
+  double x, y, w, p;
 
   std::vector<double> dataD, dataS, weightD, weightS; // vectors to store our generated data
   dataD.reserve(N);          // allocate vector beforehand, just for speedup
@@ -100,7 +105,7 @@ int main(int argc, char *argv[]){
 
   
   //-----Histograms for Weighted Energy Distributions-----//
-  TH1F *DW = new TH1F("D","D",nbins,E_min,E_max);
+  TH1F *DW = new TH1F("DW","DW",nbins,E_min,E_max);
   DW->Sumw2();
   std::map<int,TH1F*> histogramsW;
   for(int i = 0; i<= nshift_E; i++){
@@ -116,37 +121,69 @@ int main(int argc, char *argv[]){
   TGraph *gElossWKSb = new TGraph(); // Graph for Eloss values for the Binned Weighted KS test
   TGraph *gElossP = new TGraph();   
   TGraph *gElossA = new TGraph();
+  TGraph *eff = new TGraph();
+  //H1F *eff = new TH1F("eff", "eff", 50, 0, 50);
 
+
+
+  double x0 = 300;
+  double a = 1;
+  double b = 0.02;
+/*
+  for (int s=1; s<50; s++){
+    p = a / (1 + TMath::Exp(-b*(s-x0)));
+    eff->SetPoint(s, s, p);
+  }
+
+  TCanvas *con = new TCanvas();
+  TMultiGraph *ma = new TMultiGraph();
+  ma->Add(eff, "L");
+  ma->SetMaximum(1.2);
+  ma->GetXaxis()->SetTitle("X");
+  ma->GetYaxis()->SetTitle("Y"); //"-Log(p_{0})"
+  ma->Draw();
+  con->SaveAs("testEff.pdf");
+*/
   double pKSunbinned, pWKSunbinned, pWKSunbinnedPy;
   for (int i = 0; i < N_EXPS; i++) { // Loop over different pairs of histograms – Should not be the same as N
-
+    r0->SetSeed(624+i);
+    r1->SetSeed(624*2+i);
+    dataD.clear();
+    dataS.clear();
+    weightD.clear();
+    weightS.clear();
     // ------- Generating the Distributions
     for (int j = 0; j < N; j++) {  // Loop to fill one pair of histograms – Over N events
-      x = r0->Gaus(50, 5);       // Define the first Gaussian distribution with (mean, sigma)
-      y = r1->Gaus(50, 5) - 5;     // Define a second Gaussian distribution
-      w = 1;
+      //x = r0->Gaus(750, 250);       // Define the first Gaussian distribution with (mean, sigma)
+      //y = r1->Gaus(750, 250) - 20;     // Define a second Gaussian distribution
+      x = r0->Landau(500, 200);       // Define the first Beta distribution with (a, b)
+      y = r1->Landau(500-20, 200);     // Defie a second Beta distribution
+      //w = 1;
       dataD.push_back(x);           // push the random number into the first dataset
-      weightD.push_back(w);
+      weightD.push_back(a / (1 + TMath::Exp(-b*(x-x0))));
+      //cout << a << "   " << b << "  " << "   " << x << "   " << a/(1 + TMath::Exp(-b*(x-x0))) << endl;
       dataS.push_back(y);           // push the other random number into the second dataset
-      weightS.push_back(w);
+      weightS.push_back(a / (1 + TMath::Exp(-b*(y-x0))));
       D->Fill(x);
-      DW->Fill(x,w);
+      DW->Fill(x,a/(1 + TMath::Exp(-b*(x-x0))));
 
       for (int shift = 0; shift <= nshift_E; ++shift){ 
 
         energy_shift = step_E*shift;      // is doing the right shift
 
         histograms[shift]->Fill(y+energy_shift);    // Binned KS
-        histogramsW[shift]->Fill(y+energy_shift, w);  // Weighted Binned
+        histogramsW[shift]->Fill(y+energy_shift, a / (1 + TMath::Exp(-b*(y-x0))));  // Weighted Binned
       }  
     }
-    /*
+    
     TCanvas *c1 = new TCanvas();
     DW->Draw("AL");
-    histograms[0]->Draw("same");
+    D->SetLineColor(2);
+    D->Draw("same");
+    //histograms[0]->Draw("same");
     c1->BuildLegend();
     c1->SaveAs("output/D_histo_proof.pdf");
-    */
+    
 
     TGraph *gpKS = new TGraph();        //Graph for the Unbinned KS Test
     TGraph *gpWKS = new TGraph();       //Graph for the Unbinned Weighted KS Test
@@ -154,6 +191,12 @@ int main(int argc, char *argv[]){
     TGraph *gpWKSb = new TGraph();      // Graph for the Binned Weighted KS Test
     TGraph *gP_WKS = new TGraph();    // Graph for the Unbinned Weighted KS PYTHON
     TGraph *gpKSAcc = new TGraph();
+
+    TGraph *lpKS = new TGraph();        //Graph for the Unbinned KS Test
+    TGraph *lpWKS = new TGraph();       //Graph for the Unbinned Weighted KS Test
+    TGraph *lpKSb = new TGraph();       // Graph for the Binned KS Test
+    TGraph *lpWKSb = new TGraph();      // Graph for the Binned Weighted KS Test
+    TGraph *lP_WKS = new TGraph();    // Graph for the Unbinned Weighted KS PYTHON
 
     // ------ Startng each shift for tests ------ //
     for (int shift = 0; shift < nshift_E; ++shift)
@@ -168,15 +211,15 @@ int main(int argc, char *argv[]){
       histograms[shift]->Scale(1.0/histograms[shift]->Integral());
       //double pCSbinned = D->Chi2Test(histograms[i], "NORM");
       double pKSbinned = D->KolmogorovTest(histograms[shift], "D");
-      //gpKSb->SetPoint(i, i, -1*TMath::Log10(pKSbinned));
-      gpKSb->SetPoint(shift, shift, pKSbinned);
+      lpKSb->SetPoint(shift, energy_shift, -1*TMath::Log10(pKSbinned));
+      gpKSb->SetPoint(shift, energy_shift, pKSbinned);
 
       //-----Binned Weighted KS Test-----//
       DW->Scale(1.0/DW->Integral());
       histogramsW[shift]->Scale(1.0/histogramsW[shift]->Integral());
       double pWKSbinned = DW->KolmogorovTest(histogramsW[shift], "D");
-      //gWpKSb->SetPoint(i, i, -1*TMath::Log10(WpKSbinned));
-      gpWKSb->SetPoint(shift, shift, pWKSbinned); 
+      lpWKSb->SetPoint(shift, energy_shift, -1*TMath::Log10(pWKSbinned));
+      gpWKSb->SetPoint(shift, energy_shift, pWKSbinned); 
 
 
       // ------- Unbinned KS tests --------- //
@@ -210,8 +253,8 @@ int main(int argc, char *argv[]){
 
       //----------UNBINNED KOLMOGOROV TEST----------//
       double pKS = TMath::KolmogorovTest(nD, &dataD[0], nS, &shifted_data[0], "D");
-      //gpKS->SetPoint(i, i, -1*TMath::Log10(pKS));
-      gpKS->SetPoint(shift, shift, pKS);
+      lpKS->SetPoint(shift, energy_shift, -1*TMath::Log10(pKS));
+      gpKS->SetPoint(shift, energy_shift, pKS);
 
 
       Double_t w1sum = std::accumulate(weightD.begin(), weightD.end(), 0);
@@ -249,8 +292,8 @@ int main(int argc, char *argv[]){
 
       Double_t Pz = d * TMath::Sqrt(nD*nS/(nD+nS));
       double P_WKS = TMath::KolmogorovProb(Pz);
-      //gpKS->SetPoint(i, i, -1*TMath::Log10(pKS));
-      gP_WKS->SetPoint(shift, shift, P_WKS);
+      lP_WKS->SetPoint(shift, energy_shift, -1*TMath::Log10(P_WKS));
+      gP_WKS->SetPoint(shift, energy_shift, P_WKS);
 
 
       //WEIGHTED KOLMOGOROV TEST :: ROOT IMPLEMENTATION
@@ -292,16 +335,15 @@ int main(int argc, char *argv[]){
       R__ASSERT(ok);
       if (ok){
         Double_t z = rdmax * TMath::Sqrt(nD*nS/(nD+nS));
-          double pWKS = TMath::KolmogorovProb(z);
-          //gpKS->SetPoint(i, i, -1*TMath::Log10(pKS));
-        gpWKS->SetPoint(shift, shift, pWKS);
+        double pWKS = TMath::KolmogorovProb(z);
+        lpWKS->SetPoint(shift, energy_shift, -1*TMath::Log10(pWKS));
+        gpWKS->SetPoint(shift, energy_shift, pWKS);
       }
-
     }
 
     std::cout<< "END LOOP OVER SHIFTS" << std::endl;
 
-    //--------Statistical Tests Graphs--------//
+    //--------Statistical Tests Graph--------//
     gpKS->SetName("pKS");
     gpWKS->SetName("pWKS");
     gpKSb->SetName("pKSb_");
@@ -351,13 +393,65 @@ int main(int argc, char *argv[]){
     multi->SetMaximum(1.2);
     multi->SetTitle("Probability curve");
     multi->GetYaxis()->SetNdivisions(2);
-    multi->GetXaxis()->SetTitle("dE [MeV]");
+    multi->GetXaxis()->SetTitle("Shift");
     multi->GetYaxis()->SetTitle("p_{0}"); //"-Log(p_{0})"
     
     canvas->BuildLegend();
-    canvas->SaveAs(Form("output/Prob_Proof%d.pdf", i));
+    canvas->SaveAs(Form("output/Prob_Proof%d_step%d.pdf", i, int(step_E*100)));
 
-  
+
+    //--------Statistical Tests Graph LOG--------//
+    lpKS->SetName("pKS");
+    lpWKS->SetName("pWKS");
+    lpKSb->SetName("pKSb_");
+    lpWKSb->SetName("pWKSb");
+    lP_WKS->SetName("P_WKS");
+
+
+    lpKS->SetLineColor(4);   
+    lpWKS->SetLineColor(1);
+    lpKSb->SetLineColor(6); 
+    lpWKSb->SetLineColor(2);
+    lP_WKS->SetLineColor(3); //green
+
+    lpKS->SetLineWidth(3);
+    lpWKS->SetLineWidth(3);
+    lpKSb->SetLineWidth(3);
+    lpWKSb->SetLineWidth(3);
+    lP_WKS->SetLineWidth(3);
+
+    lpKS->SetLineStyle(1);
+    lpWKS->SetLineStyle(2);
+    lpKSb->SetLineStyle(3);
+    lpWKSb->SetLineStyle(4);
+    lP_WKS->SetLineStyle(5);
+
+    lpKS->SetTitle("Unbinned KS");
+    lpWKS->SetTitle("Weighted Unbinned KS");
+    lpKSb->SetTitle("Binned KS");
+    lpWKSb->SetTitle("Weighted Binned KS"); 
+    lP_WKS->SetTitle("Python Weighted KS");
+
+    TCanvas *vas = new TCanvas();
+    TMultiGraph *ulti = new TMultiGraph();
+    ulti->Add(lpKS, "L");
+    ulti->Add(lpWKS,"L");
+    ulti->Add(lpKSb,"L");
+    ulti->Add(lpWKSb,"L");
+    ulti->Add(lP_WKS,"L");
+
+    ulti->Draw("AL");
+    ulti->SetMaximum(2);
+    ulti->SetTitle("Probability curve");
+    ulti->GetYaxis()->SetNdivisions(2);
+    ulti->GetXaxis()->SetTitle("Shift");
+    ulti->GetYaxis()->SetTitle("-Log(p_{0})"); 
+    
+    vas->BuildLegend();
+    vas->SaveAs(Form("output/LOGProb_Proof%d_step%d.pdf", i, int(step_E*100)));
+
+
+
     //-----ELOSS HISTOGRAMS PLOTS-----//
     
     Double_t elossKS=0;
@@ -424,7 +518,7 @@ int main(int argc, char *argv[]){
     
     fout->cd();
 
-    histograms[i_KS]->SetName("KS_");
+    histograms[i_KS]->SetName(Form("KS_"));
     histograms[i_KS]->Write();
 
     histogramsW[i_WKS]->SetName("WKS_");
@@ -439,10 +533,13 @@ int main(int argc, char *argv[]){
     histogramsW[i_P]->SetName("Python_");
     histogramsW[i_P]->Write();
 
-    D->SetName("D_");
+    D->SetName(Form("D_%d", i));
     D->Write();
 
-    DW->SetName("Weighted_D_");
+    histograms[0]->SetName(Form("S_%d", i));
+    histograms[0]->Write();
+
+    DW->SetName(Form("Weighted_D_%d", i));
     DW->Write();
     
     //------- ELOSS GRAPHS -------//
@@ -504,14 +601,19 @@ int main(int argc, char *argv[]){
 
   multi->Draw("AP");
   multi->Write();
-  multi->SetMaximum(100);
+  //multi->SetMaximum(100);
   multi->SetTitle("Energy Loss Proof");
   multi->GetYaxis()->SetNdivisions(2);
-  multi->GetXaxis()->SetTitle("Nu [GeV]");
-  multi->GetYaxis()->SetTitle("dE [MeV]"); 
+  multi->GetXaxis()->SetTitle("Experiment");
+  multi->GetYaxis()->SetTitle("Selected Shift"); 
 
   canvas->BuildLegend();
-  canvas->SaveAs("output/Eloss_Proof.pdf");
+  canvas->SaveAs(Form("output/Eloss_Proof%d.pdf", int(step_E*100) ) );
+
+  TCanvas *test = new TCanvas();
+  D->Draw();
+
+  test->SaveAs("output/D_Test.pdf");
 
   std::cout<<" ABOUT TO CLOSE " << std::endl;
   fout->Close();
