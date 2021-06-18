@@ -397,7 +397,7 @@ int main(int argc, char *argv[]){
     multi->GetYaxis()->SetTitle("p_{0}"); //"-Log(p_{0})"
     
     canvas->BuildLegend();
-    canvas->SaveAs(Form("output/Prob_Proof%d_step%d.pdf", i, int(step_E*100)));
+    canvas->SaveAs(Form("output/Prob_Proof%d_step%d_%dEbins.pdf", i, int(step_E*100), nbins));
 
 
     //--------Statistical Tests Graph LOG--------//
@@ -448,7 +448,7 @@ int main(int argc, char *argv[]){
     ulti->GetYaxis()->SetTitle("-Log(p_{0})"); 
     
     vas->BuildLegend();
-    vas->SaveAs(Form("output/LOGProb_Proof%d_step%d.pdf", i, int(step_E*100)));
+    vas->SaveAs(Form("output/LOGProb_Proof%d_step%d_%dEbins.pdf", i, int(step_E*100), nbins));
 
 
 
@@ -608,7 +608,7 @@ int main(int argc, char *argv[]){
   multi->GetYaxis()->SetTitle("Selected Shift"); 
 
   canvas->BuildLegend();
-  canvas->SaveAs(Form("output/Eloss_Proof%d.pdf", int(step_E*100) ) );
+  canvas->SaveAs(Form("output/Eloss_Proof%d_%dEbins.pdf", int(step_E*100), nbins ) );
 
   TCanvas *test = new TCanvas();
   D->Draw();
