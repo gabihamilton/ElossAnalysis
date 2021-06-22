@@ -11,14 +11,14 @@ ROOTLIBS    := $(shell $(ROOTCONFIG) --libs)
 ROOTINCDIR  := $(shell $(ROOTCONFIG) --incdir)
 
 CXX       := g++
-CXXFLAGS  += -std=c++11 -O2 -Wall -fPIC $(ROOTCFLAGS)
+CXXFLAGS  += -std=c++0x -O2 -Wall -fPIC $(ROOTCFLAGS)
 LD        = g++
 LDFLAGS   = -O2 $(ROOTLDFLAGS)
 
 INCLUDES  := -I/$(ROOTINCDIR)
 LIBS      := $(ROOTLIBS)
 
-FILES := 1DACC 2DACC 3DACC 1DKS Smoran1DACC Proof
+FILES := Proof
 
 all: $(FILES)
 
