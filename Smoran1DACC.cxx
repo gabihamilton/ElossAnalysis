@@ -122,7 +122,7 @@ int main(int argc, char **argv)
 
   // DATA NTUPLE
   TChain *data = new TChain("ntuple_data");
-  data->Add(Form(f_location + "data/" + Nuclei_Type + fd_ext));
+  data->Add(Form("/user/h/hamilton/ThesisProj/data/" + Nuclei_Type + fd_ext));
   data->SetBranchStatus("*",0);
   data->SetBranchStatus("Q2",1);
   data->SetBranchStatus("Nu",1);
@@ -136,7 +136,7 @@ int main(int argc, char **argv)
 
   // RECONSTRUCTED NTUPLE FOR DEUTERIUM
   TChain *reconstructed_D = new TChain("ntuple_accept");
-  reconstructed_D->Add(Form(f_location + "simul/D2" + fs_ext));
+  reconstructed_D->Add(Form(f_location + "data/D2" + fs_ext));
   
   reconstructed_D->SetBranchStatus("*",0);
   reconstructed_D->SetBranchStatus("Q2",1);
@@ -155,7 +155,7 @@ int main(int argc, char **argv)
   // RECONSTRUCTED NTUPLE FOR SOLID TARGET
   TChain *reconstructed_S = new TChain("ntuple_accept");
 
-  reconstructed_S->Add(Form(f_location + "simul/" + Nuclei_Type + fs_ext));
+  reconstructed_S->Add(Form(f_location + "data/" + Nuclei_Type + fs_ext));
   
   reconstructed_S->SetBranchStatus("*",0);
   reconstructed_S->SetBranchStatus("Q2",1);
@@ -173,7 +173,7 @@ int main(int argc, char **argv)
 
   // THROWN FOR DEUTERIUM
   TChain *thrown_D = new TChain("ntuple_thrown");
-  thrown_D->Add(Form(f_location+"simul/D2" + fs_ext));
+  thrown_D->Add(Form(f_location+"data/D2" + fs_ext));
   
   thrown_D->SetBranchStatus("*",0);
   thrown_D->SetBranchStatus("Q2",1);
@@ -191,7 +191,7 @@ int main(int argc, char **argv)
   
   // THROWN FOR SOLID TARGET
   TChain *thrown_S = new TChain("ntuple_thrown");
-  thrown_S->Add(Form(f_location + "simul/" + Nuclei_Type + fs_ext));
+  thrown_S->Add(Form(f_location + "data/" + Nuclei_Type + fs_ext));
   
   thrown_S->SetBranchStatus("*",0);
   thrown_S->SetBranchStatus("Q2",1);
