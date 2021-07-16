@@ -123,11 +123,7 @@ int main(int argc, char *argv[]){
 	tree->SetBranchAddress("NmbPion",&NmbPion);
 
 	Int_t nentries = tree->GetEntries();
-<<<<<<< HEAD
 	//Int_t nentries = 2000000;
-=======
-	//Int_t nentries = 200000;
->>>>>>> ec7cb05ccb80c9055bbc71f82728d9f6f2549511
 
 	//-----Creating output file-----//	
 	TFile *fout = new TFile(Form("output/LASTKS1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
@@ -258,11 +254,7 @@ int main(int argc, char *argv[]){
 		      	if(TargType==1 && Xf>limit_xf && Zh*Nu<E_max && Zh*Nu>E_min){
 
 		        	//funcD->SetParameters(parD);
-<<<<<<< HEAD
-		        	double w = 1;//1./(funcD->Eval(Zh*Nu, 0, 0));
-=======
 		        	double w = 1.;//1./(funcD->Eval(Zh*Nu, 0, 0));
->>>>>>> ec7cb05ccb80c9055bbc71f82728d9f6f2549511
 
 					dataD.push_back(Zh*Nu);    	// Unbinned KS
 		      		weightD.push_back(w);		// Weighted Unbinned
@@ -277,12 +269,8 @@ int main(int argc, char *argv[]){
 		        	double Xf_Nuclei = Calculate_Modified_Xf(energy_shift, Nu, P, Pt,  Q2,  W, Zh);
 		        	if(Xf_Nuclei>limit_xf){
 
-		          		//funcS->SetParameters(parS);            
-<<<<<<< HEAD
-		        		double w = 1;//1./(funcS->Eval(Zh*Nu+energy_shift, 0, 0));  //weight for E value
-=======
+		          		//funcS->SetParameters(parS);
 		        		double w = 1.;//1./(funcS->Eval(Zh*Nu+energy_shift, 0, 0));  //weight for E value
->>>>>>> ec7cb05ccb80c9055bbc71f82728d9f6f2549511
 
 		          		dataS.push_back((Zh*Nu)+energy_shift); 	 	 	// Unbinned KS
 		      			weightS.push_back(w);						// Weighted Unbinned
@@ -339,7 +327,7 @@ int main(int argc, char *argv[]){
 		    //Double_t w1sum = std::accumulate(weightD.begin(), weightD.end(), 0);
 		    //Double_t w2sum = std::accumulate(weightS.begin(), weightS.end(), 0);
 
-		    cout << w1sum << "   " << nD << endl;
+		    //cout << w1sum << "   " << nD << endl;
 
 		    //WEIGHTED KOLMOGOROV TEST :: ROOT IMPLEMENTATION
 	        Double_t rdiff = 0;
@@ -425,11 +413,7 @@ int main(int argc, char *argv[]){
 
 		multi->Draw("AL");
 		multi->SetMaximum(1.2);
-<<<<<<< HEAD
-		multi->SetTitle(Form("Probability curve for %f<Nu<%f", float(Nu_min), float(Nu_max)));
-=======
 		multi->SetTitle(Form("Probability curve for %f<Nu<%f, Target: " + Nuclei_Type + "", float(Nu_min), float(Nu_max)));
->>>>>>> ec7cb05ccb80c9055bbc71f82728d9f6f2549511
 		multi->GetYaxis()->SetNdivisions(2);
 		multi->GetXaxis()->SetTitle("dE [MeV]");
 		multi->GetYaxis()->SetTitle("p_{0}"); //"-Log(p_{0})"
@@ -588,11 +572,7 @@ int main(int argc, char *argv[]){
 	multi->Draw("AP");
 	multi->Write();
 	multi->SetMaximum(100);
-<<<<<<< HEAD
-	multi->SetTitle(Form("Energy Loss for %d Nu bins", N_Nu));
-=======
 	multi->SetTitle(Form("Energy Loss for %d Nu bins, Target: " + Nuclei_Type + "", N_Nu));
->>>>>>> ec7cb05ccb80c9055bbc71f82728d9f6f2549511
 	multi->GetYaxis()->SetNdivisions(2);
 	multi->GetXaxis()->SetTitle("Nu [GeV]");
 	multi->GetYaxis()->SetTitle("dE [MeV]"); 
