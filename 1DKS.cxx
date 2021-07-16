@@ -178,11 +178,11 @@ int main(int argc, char *argv[]){
 		}
 
 		//-----Histograms for Weighted Energy Distributions-----//
-		TH1F *DW = new TH1F("D","D",nbins,E_min,E_max);
+		TH1F *DW = new TH1F("DW","DW",nbins,E_min,E_max);
 		DW->Sumw2();
 		std::map<int,TH1F*> histogramsW;
 		for(int i = 0; i<= nshift_E; i++){
-			histogramsW[i] = new TH1F(Form("Nuclei_bin%d",i),Form("Nuclei_bin%d",i),nbins,E_min,E_max);
+			histogramsW[i] = new TH1F(Form("WNuclei_bin%d",i),Form("WNuclei_bin%d",i),nbins,E_min,E_max);
 			histogramsW[i]->Sumw2();
 		}
 
@@ -437,7 +437,12 @@ int main(int argc, char *argv[]){
 		    Solid->Scale(1.0/Solid->Integral());
 		    double pKSAcc = DCorr->KolmogorovTest(Solid, "D");
 		    gpKSAcc->SetPoint(shift, shift, pKSAcc);
+
 */
+		    dataS.clear();
+		   	dataD.clear();
+		   	weightD.clear();
+		   	weightS.clear();
 	  	}//-------End of the Loop over shifts------//
 
 	  	std::cout<< "END LOOP OVER SHIFTS" << std::endl;
