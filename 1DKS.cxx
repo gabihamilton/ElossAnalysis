@@ -125,7 +125,7 @@ int main(int argc, char *argv[]){
 	tree->SetBranchAddress("NmbPion",&NmbPion);
 
 	Int_t nentries = tree->GetEntries();
-	//Int_t nentries = 1000;
+	//Int_t nentries = 2000000;
 
 	//-----Creating output file-----//	
 	TFile *fout = new TFile(Form("output/KS1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
@@ -161,11 +161,11 @@ int main(int argc, char *argv[]){
 		Double_t parS[n+1];
 
 		// Fitting Functions
-		TF1 * funcD = (TF1*) gROOT->GetFunction(Form("chebyshev%d", n));
+		/*TF1 * funcD = (TF1*) gROOT->GetFunction(Form("chebyshev%d", n));
 		funcD->SetRange(E_min,E_max);
 		TF1 * funcS = (TF1*) gROOT->GetFunction(Form("chebyshev%d", n));
 		funcS->SetRange(E_min,E_max);
-
+*/
 		TFile *acc = new TFile(Form("output/1Dfout_"+Nuclei_Type+"_%dnubin%d.root", N_Nu, Nu_bin)); // Acceptance files
 
 		//-----Histograms with Energy distribution-----//
@@ -186,7 +186,7 @@ int main(int argc, char *argv[]){
 			histogramsW[i]->Sumw2();
 		}
 
-
+/*
 		TFile *fileFit = new TFile(Form("output/1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d_FITS.root", N_Nu, n, nbins), "RECREATE");
 
 
@@ -213,13 +213,13 @@ int main(int argc, char *argv[]){
 		funcD->GetParameters(&parD[0]);  // Saving Fit Parameters
 		//cout << parD[Q2_bin][0] << "  " << parD[Q2_bin][1] << "  " << parD[Q2_bin][2] << "  " << parD[Q2_bin][3]  endl;
 
-
+*/
 		//--------LOOP OVER THE SHIFTS---------//
 		cout << "Starting loop over Shifts" << endl;
 		for (int shift = 0; shift <= nshift_E; ++shift){ 
 
 			// Starting Loop over Q2 for Solid Target
-
+/*
    			cout << "Fitting the Solid Target Shift: " << shift << endl;
 
 			TH1F *h = (TH1F*)acc->Get(Form("acc_"+Nuclei_Type+"_shift%d_nubin%d", shift, Nu_bin)); // Getting the right acc histogram
@@ -239,7 +239,7 @@ int main(int argc, char *argv[]){
 	    	
 
 		   	cout << "Entering the loop over entries " << nentries << endl;
-
+*/
 		   	// Vectors for data and weights
 		  	vector<double> dataS;
 		   	vector<double> dataD;
@@ -258,8 +258,8 @@ int main(int argc, char *argv[]){
 		    	// Deuterium
 		      	if(TargType==1 && Xf>limit_xf && Zh*Nu<E_max && Zh*Nu>E_min){
 
-		        	funcD->SetParameters(parD);
-		        	double w = 1./(funcD->Eval(Zh*Nu, 0, 0));
+		        	//funcD->SetParameters(parD);
+		        	double w = 1;//1./(funcD->Eval(Zh*Nu, 0, 0));
 
 					dataD.push_back(Zh*Nu);    	// Unbinned KS
 		      		weightD.push_back(w);		// Weighted Unbinned
@@ -273,8 +273,8 @@ int main(int argc, char *argv[]){
 		        	double Xf_Nuclei = Calculate_Modified_Xf(energy_shift, Nu, P, Pt,  Q2,  W, Zh);
 		        	if(Xf_Nuclei>limit_xf){
 
-		          		funcS->SetParameters(parS);            
-		        		double w = 1./(funcS->Eval(Zh*Nu+energy_shift, 0, 0));  //weight for E value
+		          		//funcS->SetParameters(parS);            
+		        		double w = 1;//1./(funcS->Eval(Zh*Nu+energy_shift, 0, 0));  //weight for E value
 
 		          		dataS.push_back((Zh*Nu)+energy_shift); 	 	 	// Unbinned KS
 		      			weightS.push_back(w);						// Weighted Unbinned
@@ -485,7 +485,7 @@ int main(int argc, char *argv[]){
 
 		multi->Draw("AL");
 		multi->SetMaximum(1.2);
-		multi->SetTitle(Form("Probability curve for %f<Nu<%f and Cheb order of %d", float(Nu_min), float(Nu_max), n));
+		multi->SetTitle(Form("Probability curve for %f<Nu<%f", float(Nu_min), float(Nu_max)));
 		multi->GetYaxis()->SetNdivisions(2);
 		multi->GetXaxis()->SetTitle("dE [MeV]");
 		multi->GetYaxis()->SetTitle("p_{0}"); //"-Log(p_{0})"
@@ -615,8 +615,8 @@ int main(int argc, char *argv[]){
 		DW->SetName(Form("Weighted_D_%d", Nu_bin));
 		DW->Write();
 
-		DAcc->SetName(Form("Acc_Corr_D_%d", Nu_bin));
-		DAcc->Write();
+		//DAcc->SetName(Form("Acc_Corr_D_%d", Nu_bin));
+		//DAcc->Write();
 
 	    //------- ELOSS GRAPHS -------//
 	    gElossKS->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_KS);
@@ -678,7 +678,7 @@ int main(int argc, char *argv[]){
 	multi->Draw("AP");
 	multi->Write();
 	multi->SetMaximum(100);
-	multi->SetTitle(Form("Energy Loss for %d Nu bins and Cheb order of %d", N_Nu, n));
+	multi->SetTitle(Form("Energy Loss for %d Nu bins", N_Nu));
 	multi->GetYaxis()->SetNdivisions(2);
 	multi->GetXaxis()->SetTitle("Nu [GeV]");
 	multi->GetYaxis()->SetTitle("dE [MeV]"); 
