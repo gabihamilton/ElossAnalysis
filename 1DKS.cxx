@@ -491,7 +491,7 @@ int main(int argc, char *argv[]){
 		multi->GetYaxis()->SetTitle("p_{0}"); //"-Log(p_{0})"
 		
 		canvas->BuildLegend();
-		canvas->SaveAs(Form("output/Prob_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max*100), n, nbins));
+		canvas->SaveAs(Form("output/LASTProb_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max*100), n, nbins));
 
 	
 		//-----ELOSS HISTOGRAMS PLOTS-----//
@@ -684,7 +684,7 @@ int main(int argc, char *argv[]){
 	multi->GetYaxis()->SetTitle("dE [MeV]"); 
 
 	canvas->BuildLegend();
-	canvas->SaveAs(Form("output/Eloss_"+Nuclei_Type+"_%dnubins_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, nentries, int(E_min), int(E_max), n, nbins));
+	canvas->SaveAs(Form("output/LASTEloss_"+Nuclei_Type+"_%dnubins_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, nentries, int(E_min), int(E_max), n, nbins));
 
 	std::cout<<" ABOUT TO CLOSE " << std::endl;
 	fout->Close();
