@@ -68,25 +68,23 @@ int main(int argc, char *argv[]){
 
 	Nuclei_Type = (TString) argv[1];
   	Int_t N_Nu = atoi(argv[2]);
-  	Int_t n = atoi(argv[3]);  // ORDER OF THE CHEBYSHEV FUNC
-  	Int_t nbins = atoi(argv[4]);
+  	Int_t nbins = atoi(argv[3]);
+  	Int_t n = atoi(argv[4]);  // ORDER OF THE CHEBYSHEV FUNC
 
 	//double Nu_min = 3.2 + Nu_bin*((4.2-3.2)/N_Nu); 
 	//double Nu_max = Nu_min + (4.2-3.2)/N_Nu;
 
 
 	cout << "The Nuclei type studied is " << Nuclei_Type << endl;
-	//cout << "Nu interval studied : " << Nu_min << " - " << Nu_max << endl;
-	ostringstream nubin_label;
-	//nubin_label << Nu_min  <<" < #nu < " << Nu_max << " GeV ";
 	cout<< "The cut on Xf is " << limit_xf << endl;
+
 	//------Opening data files-----//
 	//TFile *file = new TFile(Form("/Users/gbibim/Documents/data/" + Nuclei_Type + "_data.root"));
 	TFile *file = new TFile(Form("/user/h/hamilton/ThesisProj/data/" + Nuclei_Type + "_data.root"));
 
-	//TFile* fout = new TFile(Form("OUTPUT/Xfmod_Ehist_"+Nuclei_Type+"_nubin%d_.root",Nu_bin),"RECREATE");
-
 	//-----Opening TTree----//
+
+	//------ Hayk's Tuples -----//
 	TTree* tree = (TTree*)file->Get("ntuple_data");
 	//Reading Branches with appropiate variables. 
 	Float_t TargType;
@@ -125,18 +123,16 @@ int main(int argc, char *argv[]){
 	tree->SetBranchAddress("NmbPion",&NmbPion);
 
 	Int_t nentries = tree->GetEntries();
-	//Int_t nentries = 2000000;
+	//Int_t nentries = 200000;
 
 	//-----Creating output file-----//	
-	TFile *fout = new TFile(Form("output/KS1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
+	TFile *fout = new TFile(Form("output/LASTKS1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
 
 	//-----Creating the Graphs for the Eloss Shift Values------//
 	TGraph *gElossKS = new TGraph();  //  Graph for Eloss values for the KS test
 	TGraph *gElossWKS = new TGraph(); //  Graph for Eloss values fot the Weighted KS test
 	TGraph *gElossKSb = new TGraph(); //  Graph for Eloss values for the Binned KS test
 	TGraph *gElossWKSb = new TGraph(); // Graph for Eloss values for the Binned Weighted KS test
-	TGraph *gElossP = new TGraph();   
-	TGraph *gElossA = new TGraph();
 
 
 	//--------Starting Loop Over Nu bins---------//
@@ -153,8 +149,6 @@ int main(int argc, char *argv[]){
 		TGraph *gpWKS = new TGraph();     	//Graph for the Unbinned Weighted KS Test
 		TGraph *gpKSb = new TGraph();     	// Graph for the Binned KS Test
 		TGraph *gpWKSb = new TGraph();    	// Graph for the Binned Weighted KS Test
-		TGraph *gP_WKS = new TGraph();		// Graph for the Unbinned Weighted KS PYTHON
-		TGraph *gpKSAcc = new TGraph();     // Graph for the Accepted KS test
 
 		// Parameters arrays for Fits
 		Double_t parD[n+1];
@@ -245,6 +239,7 @@ int main(int argc, char *argv[]){
 		   	vector<double> dataD;
 		   	vector<double> weightD;
 		   	vector<double> weightS;
+		   	double w1sum=0., w2sum=0.;
 
      		energy_shift = step_E*shift;      // is doing the right shift
 
@@ -259,12 +254,13 @@ int main(int argc, char *argv[]){
 		      	if(TargType==1 && Xf>limit_xf && Zh*Nu<E_max && Zh*Nu>E_min){
 
 		        	//funcD->SetParameters(parD);
-		        	double w = 1;//1./(funcD->Eval(Zh*Nu, 0, 0));
+		        	double w = 1.;//1./(funcD->Eval(Zh*Nu, 0, 0));
 
 					dataD.push_back(Zh*Nu);    	// Unbinned KS
 		      		weightD.push_back(w);		// Weighted Unbinned
 		        	D->Fill(Zh*Nu);				// Binned KS
 		      		DW->Fill(Zh*Nu, w);			// Weighted Binned
+		      		w1sum = w1sum + w;
 		      	}
 
 		      	// Solid Target
@@ -274,23 +270,41 @@ int main(int argc, char *argv[]){
 		        	if(Xf_Nuclei>limit_xf){
 
 		          		//funcS->SetParameters(parS);            
-		        		double w = 1;//1./(funcS->Eval(Zh*Nu+energy_shift, 0, 0));  //weight for E value
+		        		double w = 1.;//1./(funcS->Eval(Zh*Nu+energy_shift, 0, 0));  //weight for E value
 
 		          		dataS.push_back((Zh*Nu)+energy_shift); 	 	 	// Unbinned KS
 		      			weightS.push_back(w);						// Weighted Unbinned
 		          		histograms[shift]->Fill(Zh*Nu+energy_shift); 		// Binned KS
 		      			histogramsW[shift]->Fill(Zh*Nu+energy_shift, w);	// Weighted Binned
+		      			w2sum = w2sum + w;
 		        	}                                                
 		      	}
 	    	}
 
 	    	cout<< "END LOOP OVER ENTRIES" << endl;
 
+		    //-----Binned Kolmogorov-Smirnov Test-----//
+		    D->Scale(1.0/D->Integral());
+		    histograms[shift]->Scale(1.0/histograms[shift]->Integral());
+		    //double pCSbinned = D->Chi2Test(histograms[i], "NORM");
+		    double pKSbinned = D->KolmogorovTest(histograms[shift], "D");
+		    //gpKSb->SetPoint(i, i, -1*TMath::Log10(pKSbinned));
+		    gpKSb->SetPoint(shift, shift, pKSbinned);
+
+		    //-----Binned Weighted KS Test-----//
+		    DW->Scale(1.0/DW->Integral());
+		    histogramsW[shift]->Scale(1.0/histogramsW[shift]->Integral());
+		    double pWKSbinned = DW->KolmogorovTest(histogramsW[shift], "D");
+		    //gWpKSb->SetPoint(i, i, -1*TMath::Log10(WpKSbinned));
+		    gpWKSb->SetPoint(shift, shift, pWKSbinned);	
+
+
+		    //--------Unbinned Tests--------//
 
 	    	//--------Sorting vectors and filling energy Graphs-------//
 	    	int nD = dataD.size();
 	    	int nS = dataS.size();
-
+/*
  			vector<int> idxD(nD);
  			vector<int> idxS(nS);
 
@@ -300,22 +314,9 @@ int main(int argc, char *argv[]){
 
  			sort(idxD.begin(), idxD.end(), [&](int i,int j){return dataD[i]<dataD[j];} );
  			sort(idxS.begin(), idxS.end(), [&](int i,int j){return dataS[i]<dataS[j];} );
-
+*/
 	    	sort(dataD.begin(), dataD.end());
 	    	sort(dataS.begin(), dataS.end());
-
-	    	//double* dataD_array = new double[nD];
-	    	//double* dataS_array = new double[nS];
-
-	    	//double* weightD_array = new double[nD];
-	    	//double* weightS_array = new double[nS];
-
-	   		//copy(dataD.begin(), dataD.end(), dataD_array);
-		    //copy(dataS.begin(), dataS.end(), dataS_array);
-
-		    //copy(weightD.begin(), weightD.end(), weightD_array);
-		    //copy(weightS.begin(), weightS.end(), weightS_array);
-
 
 		    //----------UNBINNED KOLMOGOROV TEST----------//
 		    double pKS = TMath::KolmogorovTest(nD, &dataD[0], nS, &dataS[0], "D");
@@ -323,59 +324,22 @@ int main(int argc, char *argv[]){
 		    gpKS->SetPoint(shift, shift, pKS);
 
 
+		    //Double_t w1sum = std::accumulate(weightD.begin(), weightD.end(), 0);
+		    //Double_t w2sum = std::accumulate(weightS.begin(), weightS.end(), 0);
 
-		    Double_t w1sum = std::accumulate(weightD.begin(), weightD.end(), 0);
-		    Double_t w2sum = std::accumulate(weightS.begin(), weightS.end(), 0);
-
-
-		    //WEIGHTED KOLMOGOROV TEST :: PYTHON IMPLEMENTATION
-		    int j1=0, j2=0;
-		    Double_t d=0;
-			Double_t j1w=0., j2w=0., fn1=0., fn2=0.;
-			
-		    while (j1<nD && j2<nS){
-
-		    	Double_t d1 = dataD[j1];
-		    	Double_t d2 = dataS[j2];
-		    	Double_t w1 = weightD[idxD[j1]];
-		    	Double_t w2 = weightS[idxS[j2]];
-		    	
-		    	//cout << nD << "   " << w1sum << endl;
-
-		    	if (d1<=d2){
-            		j1+=1;
-            		j1w+=w1;
-            		fn1=(j1w)/w1sum;
-            	}
-		        if (d2<=d1){
-		            j2+=1;
-		            j2w+=w2;
-		            fn2=(j2w)/w2sum;
-		        }
-		        if (TMath::Abs(fn2-fn1)>d){
-		            d=TMath::Abs(fn2-fn1);
-		        }
-		    }
-
-		    Double_t Pz = d * TMath::Sqrt(nD*nS/(nD+nS));
-   			double P_WKS = TMath::KolmogorovProb(Pz);
-   			//gpKS->SetPoint(i, i, -1*TMath::Log10(pKS));
-	    	gP_WKS->SetPoint(shift, shift, P_WKS);
-
+		    cout << w1sum << "   " << nD << endl;
 
 		    //WEIGHTED KOLMOGOROV TEST :: ROOT IMPLEMENTATION
 	        Double_t rdiff = 0;
     		Double_t rdmax = 0;
 		    Bool_t ok = kFALSE;
-		    Double_t sa  = 1./w1sum	;
-    		Double_t sb  = 1./w2sum	;
-    		j1 = 0;
-    		j2 = 0;
+    		int j1 = 0;
+    		int j2 = 0;
 		    for (int l = 0; l < nD+nS; ++l){
-		    	int a = idxD[j1];
-		    	int b = idxS[j2];
-		    	Double_t w1 = weightD[idxD[j1]]/w1sum;
-		    	Double_t w2 = weightS[idxS[j2]]/w2sum;
+		    	int a = j1; //idxD[j1];
+		    	int b = j2; //idxS[j2];
+		    	Double_t w1 = weightD[a]/w1sum;
+		    	Double_t w2 = weightS[b]/w2sum;
 
 				if (dataD[j1] < dataS[j2]) {
 				    rdiff -= w1;
@@ -409,36 +373,7 @@ int main(int argc, char *argv[]){
        			//gpKS->SetPoint(i, i, -1*TMath::Log10(pKS));
 		    	gpWKS->SetPoint(shift, shift, pWKS);
 		    }
-
-
-
-		    //-----Binned Kolmogorov-Smirnov Test-----//
-		    D->Scale(1.0/D->Integral());
-		    histograms[shift]->Scale(1.0/histograms[shift]->Integral());
-		    //double pCSbinned = D->Chi2Test(histograms[i], "NORM");
-		    double pKSbinned = D->KolmogorovTest(histograms[shift], "D");
-		    //gpKSb->SetPoint(i, i, -1*TMath::Log10(pKSbinned));
-		    gpKSb->SetPoint(shift, shift, pKSbinned);
-
-		    //-----Binned Weighted KS Test-----//
-		    DW->Scale(1.0/DW->Integral());
-		    histogramsW[shift]->Scale(1.0/histogramsW[shift]->Integral());
-		    double pWKSbinned = DW->KolmogorovTest(histogramsW[shift], "D");
-		    //gWpKSb->SetPoint(i, i, -1*TMath::Log10(WpKSbinned));
-		    gpWKSb->SetPoint(shift, shift, pWKSbinned);	
-
-		    //-----Binned Accepted KS Test-----//
-/*
-			TH1F *DCorr = (TH1F*)acc->Get("D"); // Getting the corrected D Histograms
-			TH1F *Solid = (TH1F*)acc->Get(Form("Nuclei_shift%d", shift)); // getting the corrected Nuclei histogram
-			DCorr->GetXaxis()->SetRangeUser(0.5,2.0);
-			Solid->GetXaxis()->SetRangeUser(0.5,2.0);
-		    DCorr->Scale(1.0/DCorr->Integral());
-		    Solid->Scale(1.0/Solid->Integral());
-		    double pKSAcc = DCorr->KolmogorovTest(Solid, "D");
-		    gpKSAcc->SetPoint(shift, shift, pKSAcc);
-
-*/
+	
 		    dataS.clear();
 		   	dataD.clear();
 		   	weightD.clear();
@@ -452,32 +387,22 @@ int main(int argc, char *argv[]){
 		gpWKS->SetName(Form("pWKS_"+Nuclei_Type+"_nubin%d", Nu_bin));
 		gpKSb->SetName(Form("pKSb_"+Nuclei_Type+"_nubin%d", Nu_bin));
 		gpWKSb->SetName(Form("pWKSb_"+Nuclei_Type+"_nubin%d", Nu_bin));
-		gP_WKS->SetName(Form("P_WKS_"+Nuclei_Type+"_nubin%d", Nu_bin));
-		//gpKSAcc->SetName(Form("pKSAcc_"+Nuclei_Type+"_nubin%d", Nu_bin));
-
 
 		gpKS->SetLineColor(4);   
 		gpWKS->SetLineColor(1);
 		gpKSb->SetLineColor(6); 
 		gpWKSb->SetLineColor(2);
-		gP_WKS->SetLineColor(3); //green
-		//gpKSAcc->SetLineColor(28);
 
 		gpKS->SetLineWidth(3);
 		gpWKS->SetLineWidth(3);
 		gpWKS->SetLineStyle(9);
 		gpKSb->SetLineWidth(3);
 		gpWKSb->SetLineWidth(3);
-		gP_WKS->SetLineWidth(3);
-		gP_WKS->SetLineStyle(7);
-		//gpKSAcc->SetLineWidth(3);
 
 		gpKS->SetTitle("Unbinned KS");
 		gpWKS->SetTitle("Weighted Unbinned KS");
 		gpKSb->SetTitle("Binned KS");
-		gpWKSb->SetTitle("Weighted Binned KS"); 
-		gP_WKS->SetTitle("Python Weighted KS");
-		//gpKSAcc->SetTitle("Acc. Corrected KS");
+		gpWKSb->SetTitle("Weighted Binned KS");
 
 		TCanvas *canvas = new TCanvas();
 		TMultiGraph *multi = new TMultiGraph();
@@ -485,19 +410,17 @@ int main(int argc, char *argv[]){
 		multi->Add(gpWKS,"L");
 		multi->Add(gpKSb,"L");
 		multi->Add(gpWKSb,"L");
-		multi->Add(gP_WKS,"L");
-		//multi->Add(gpKSAcc, "L");
 
 		multi->Draw("AL");
 		multi->SetMaximum(1.2);
-		multi->SetTitle(Form("Probability curve for %f<Nu<%f", float(Nu_min), float(Nu_max)));
+		multi->SetTitle(Form("Probability curve for %f<Nu<%f, Target: " + Nuclei_Type + "", float(Nu_min), float(Nu_max)));
 		multi->GetYaxis()->SetNdivisions(2);
 		multi->GetXaxis()->SetTitle("dE [MeV]");
 		multi->GetYaxis()->SetTitle("p_{0}"); //"-Log(p_{0})"
 		
 		canvas->BuildLegend();
 		canvas->SaveAs(Form("output/LASTProb_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max*100), n, nbins));
-
+		canvas->Write();
 	
 		//-----ELOSS HISTOGRAMS PLOTS-----//
 		
@@ -505,14 +428,10 @@ int main(int argc, char *argv[]){
 		Double_t elossWKS=0;
 		Double_t elossKSb=0;
 		Double_t elossWKSb=0;
-		Double_t elossP=0;
-		Double_t elossA=0;
 		Int_t i_KS=0;
 		Int_t i_WKS=0;
 		Int_t i_KSb=0;
 		Int_t i_WKSb=0;
-		Int_t i_P=0;
-		Int_t i_A=0;
 
 		for (int i = 0; i < nshift_E; ++i){
 			Double_t x, y;
@@ -541,24 +460,11 @@ int main(int argc, char *argv[]){
 				i_WKSb = i;
 			}
 
-			gP_WKS->GetPoint(i, x, y); 
-			if(y>elossP){
-				elossP=y;
-				i_P = i;
-			}
-
-			gpKSAcc->GetPoint(i, x, y); 
-			if(y>elossA){
-				elossA=y;
-				i_A = i;
-			}
 		}
 		cout << "ELOSS VALUE FOR KS: " << i_KS << "   PROB: " << elossKS << endl;
 		cout << "ELOSS VALUE FOR WKS: " << i_WKS << "   PROB: " << elossWKS << endl;
 		cout << "ELOSS VALUE FOR KSb: " << i_KSb << "   PROB: " << elossKSb << endl;
 		cout << "ELOSS VALUE FOR WKSb: " << i_WKSb << "   PROB: " << elossWKSb << endl;
-		cout << "ELOSS VALUE FOR Python: " << i_P << "   PROB: " << elossP << endl;
-		//cout << "ELOSS VALUE FOR Acc: " << i_A << "   PROB: " << elossA << endl;
 
 
 		//-----Energy spectra distributions-----//
@@ -611,9 +517,6 @@ int main(int argc, char *argv[]){
 		histogramsW[i_WKSb]->SetName(Form("WKSb_%d", Nu_bin));
 		histogramsW[i_WKSb]->Write();
 
-		histogramsW[i_P]->SetName(Form("Python_%d", Nu_bin));
-		histogramsW[i_P]->Write();
-
 		D->SetName(Form("D_%d", Nu_bin));
 		D->Write();
 
@@ -628,8 +531,6 @@ int main(int argc, char *argv[]){
 	    gElossWKS->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_WKS);
 	    gElossKSb->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_KSb);
 	    gElossWKSb->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_WKSb);
-	    gElossP->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_P);
-	    //gElossA->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_A);
 	}//  END OF LOOP OVER NU BINS
 
 
@@ -640,36 +541,26 @@ int main(int argc, char *argv[]){
 	gElossWKS->SetName(Form("ElossWKS_"+Nuclei_Type));
 	gElossKSb->SetName(Form("ElossKSb_"+Nuclei_Type));
 	gElossWKSb->SetName(Form("ElossWKS_"+Nuclei_Type));
-	gElossP->SetName(Form("ElossP_"+Nuclei_Type));
-	//gElossA->SetName(Form("ElossP_"+Nuclei_Type));
 
 	gElossKS->Write();
 	gElossWKS->Write();
 	gElossKSb->Write();
 	gElossWKSb->Write();
-	gElossP->Write();
-	//gElossA->Write();
 
 	gElossKS->SetMarkerColor(4);    
 	gElossWKS->SetMarkerColor(1);
 	gElossKSb->SetMarkerColor(6);   
-	gElossWKSb->SetMarkerColor(2); 
-	gElossP->SetMarkerColor(3);
-	//gElossA->SetMarkerColor(28); 
+	gElossWKSb->SetMarkerColor(2);
 
 	gElossKS->SetMarkerStyle(20);
 	gElossWKS->SetMarkerStyle(30);
 	gElossKSb->SetMarkerStyle(22);
 	gElossWKSb->SetMarkerStyle(23);
-	gElossP->SetMarkerStyle(42);
-	//gElossA->SetMarkerStyle(21);
 
 	gElossKS->SetTitle("Unbinned KS");
 	gElossWKS->SetTitle("Weighted Unbinned KS");
 	gElossKSb->SetTitle("Binned KS");
 	gElossWKSb->SetTitle("Weighted Binned KS");
-	gElossP->SetTitle("Python Weighted");
-	//gElossA->SetTitle("Acc Corr KS");
 
 	TCanvas *canvas = new TCanvas();
 	TMultiGraph *multi = new TMultiGraph();
@@ -677,19 +568,18 @@ int main(int argc, char *argv[]){
 	multi->Add(gElossWKS,"");
 	multi->Add(gElossKSb,"");
 	multi->Add(gElossWKSb, "");
-	multi->Add(gElossP, "");
-	//multi->Add(gElossA, "");
 
 	multi->Draw("AP");
 	multi->Write();
 	multi->SetMaximum(100);
-	multi->SetTitle(Form("Energy Loss for %d Nu bins", N_Nu));
+	multi->SetTitle(Form("Energy Loss for %d Nu bins, Target: " + Nuclei_Type + "", N_Nu));
 	multi->GetYaxis()->SetNdivisions(2);
 	multi->GetXaxis()->SetTitle("Nu [GeV]");
 	multi->GetYaxis()->SetTitle("dE [MeV]"); 
 
 	canvas->BuildLegend();
 	canvas->SaveAs(Form("output/LASTEloss_"+Nuclei_Type+"_%dnubins_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, nentries, int(E_min), int(E_max), n, nbins));
+	canvas->Write();
 
 	std::cout<<" ABOUT TO CLOSE " << std::endl;
 	fout->Close();
