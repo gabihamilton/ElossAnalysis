@@ -338,8 +338,8 @@ int main(int argc, char *argv[]){
 		    for (int l = 0; l < nD+nS; ++l){
 		    	int a = j1; //idxD[j1];
 		    	int b = j2; //idxS[j2];
-		    	Double_t w1 = weightD[a]/w1sum;
-		    	Double_t w2 = weightS[b]/w2sum;
+		    	Double_t w1 = 1./w1sum; //weightD[a]/w1sum;
+		    	Double_t w2 = 1./w2sum; //weightS[b]/w2sum;
 
 				if (dataD[j1] < dataS[j2]) {
 				    rdiff -= w1;
