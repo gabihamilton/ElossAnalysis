@@ -79,8 +79,8 @@ int main(int argc, char *argv[]){
 	cout<< "The cut on Xf is " << limit_xf << endl;
 
 	//------Opening data files-----//
-	//TFile *file = new TFile(Form("/Users/gbibim/Documents/ElossAnalysis/chargedPions//" + Nuclei_Type + "_data.root"));
-	TFile *file = new TFile(Form("/user/b/brooksw/bruno/" + Nuclei_Type + "_data.root"));
+	TFile *file = new TFile(Form("/Users/gbibim/Documents/ElossAnalysis/chargedPions//" + Nuclei_Type + "_data.root"));
+	//TFile *file = new TFile(Form("/user/b/brooksw/bruno/" + Nuclei_Type + "_data.root"));
 
 	//-----Opening TTree----//
 
@@ -88,6 +88,7 @@ int main(int argc, char *argv[]){
 	TTree* tree = (TTree*)file->Get("ntuple_data");
 	//Reading Branches with appropiate variables. 
 	Float_t PID;
+	Float_t Nphe;
 	Float_t TargType;
 	Float_t Q2;
 	Float_t Nu;
@@ -106,6 +107,7 @@ int main(int argc, char *argv[]){
 	Float_t deltaZ;
 	//Float_t NmbPion;
 	tree->SetBranchAddress("PID",&PID);
+	tree->SetBranchAddress("Nphe",&Nphe);
 	tree->SetBranchAddress("TargType",&TargType);
 	tree->SetBranchAddress("Q2",&Q2);
 	tree->SetBranchAddress("Nu",&Nu);
@@ -124,8 +126,8 @@ int main(int argc, char *argv[]){
 	tree->SetBranchAddress("deltaZ",&deltaZ);
 	//tree->SetBranchAddress("NmbPion",&NmbPion);
 
-	Int_t nentries = tree->GetEntries();
-	//Int_t nentries = 10000;
+	//Int_t nentries = tree->GetEntries();
+	Int_t nentries = 1000000;
 
 	//-----Creating output file-----//	
 	TFile *fout = new TFile(Form("output/SKS1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
@@ -259,10 +261,12 @@ int main(int argc, char *argv[]){
 		      	//Apply Cuts bin in Nu
 		      	if(Nu > Nu_max || Nu < Nu_min) continue; 
 
-		      	if(PID!=211 && P<2.7 && T4<-0.6) continue;
+		      	if(PID!=211 && P<2.7 && T4<-0.6 && Nphe<15) continue;
+
+		      	if ( (T4>0.45 && P>3.3) || (T4>0.5 && P<3.3)) continue;
 
 		    	// Deuterium
-		      	if(PID==211 && TargType==1 && Xf>limit_xf && Zh*Nu<E_max && Zh*Nu>E_min){
+		      	if(TargType==1 && Xf>limit_xf && Zh*Nu<E_max && Zh*Nu>E_min){
 
 		        	//funcD->SetParameters(parD);
 		        	double w = 1.;//1./(funcD->Eval(Zh*Nu, 0, 0));
@@ -275,7 +279,7 @@ int main(int argc, char *argv[]){
 		      	}
 
 		      	// Solid Target
-		      	if(PID==211 && TargType==2 && Zh*Nu+energy_shift<E_max && Zh*Nu+energy_shift>E_min){ 
+		      	if(TargType==2 && Zh*Nu+energy_shift<E_max && Zh*Nu+energy_shift>E_min){ 
 		      		// xF modified cut
 		      		Double_t W = TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2);
 		      		Double_t Pt = TMath::Sqrt(Pt2);
@@ -428,7 +432,7 @@ int main(int argc, char *argv[]){
 		multi->GetYaxis()->SetTitle("p_{0}"); //"-Log(p_{0})"
 		
 		canvas->BuildLegend();
-		canvas->SaveAs(Form("output/SProb_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max*100), n, nbins));
+		canvas->SaveAs(Form("output/SCutsProb_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max*100), n, nbins));
 		canvas->Write();
 	
 		//-----ELOSS HISTOGRAMS PLOTS-----//
@@ -587,7 +591,7 @@ int main(int argc, char *argv[]){
 	multi->GetYaxis()->SetTitle("dE [MeV]"); 
 
 	canvas->BuildLegend();
-	canvas->SaveAs(Form("output/SEloss_"+Nuclei_Type+"_%dnubins_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, nentries, int(E_min), int(E_max), n, nbins));
+	canvas->SaveAs(Form("output/SCutsEloss_"+Nuclei_Type+"_%dnubins_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, nentries, int(E_min), int(E_max), n, nbins));
 	canvas->Write();
 
 	std::cout<<" ABOUT TO CLOSE " << std::endl;
