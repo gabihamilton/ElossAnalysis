@@ -121,7 +121,7 @@ int main(int argc, char **argv)
   #else
     TCut Pt2_cut_S = Form("Pt*Pt>%f && Pt*Pt<%f", Pt2_min, Pt2_max);
   #endif
-    
+
   TCut cuts_simulD = Target_cutD&&Q2_cut_S&&Nu_cut_S&&Phi_cut_S&&Pt2_cut_S;
   TCut cuts_simulS = Target_cutS&&Q2_cut_S&&Nu_cut_S&&Phi_cut_S&&Pt2_cut_S;
   
@@ -227,10 +227,10 @@ int main(int argc, char **argv)
   thrown_D->SetBranchStatus("Pt",1);
   thrown_D->SetBranchStatus("Xf",1);
   thrown_D->SetBranchStatus("Zh",1);
-  thrown_D->SetBranchStatus("TargType",1);
   thrown_D->SetBranchStatus("P",1);
   #if SMORAN!=1
     thrown_D->SetBranchStatus("W",1);
+    thrown_D->SetBranchStatus("TargType",1);
   #endif
 
   thrown_D->Draw(">>list_thrD",cuts_simulD,"goff");
@@ -253,10 +253,10 @@ int main(int argc, char **argv)
   thrown_S->SetBranchStatus("Pt",1);
   thrown_S->SetBranchStatus("Xf",1);
   thrown_S->SetBranchStatus("Zh",1);
-  thrown_S->SetBranchStatus("TargType",1);
   thrown_S->SetBranchStatus("P",1);
   #if SMORAN!=1
     thrown_D->SetBranchStatus("W",1);
+    thrown_S->SetBranchStatus("TargType",1);
   #endif
 
   thrown_S->Draw(">>list_thrS",cuts_simulS,"goff");
