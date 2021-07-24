@@ -1,4 +1,5 @@
 //CODE FOR THE ACCEPTANCE CALCULATION//
+#define SMORAN 1
 
 #include <iostream>
 #include <fstream>
@@ -59,7 +60,12 @@ const Int_t nbins = 100;             // number of energy bins
 
 const Int_t nSimuFiles = 4;
 
-const TString f_location = "/user/h/hamilton/ThesisProj/data/"; // The location of data and simulation files with ntuples inside
+#if SMORAN==1
+  const TString f_location = "/user/b/brooksw/bruno/";
+#else
+  const TString f_location = "/user/h/hamilton/ThesisProj/data/"; // The location of data and simulation files with ntuples inside
+#endif
+
 const TString fd_ext = "_data.root";
 const TString fs_ext = "_simul.root";
 
@@ -121,62 +127,93 @@ int main(int argc, char **argv)
   //-----------------------OBTAINING THE NTUPLES-------------------------//
 
   // DATA NTUPLE
+
   TChain *data = new TChain("ntuple_data");
   data->Add(Form(f_location + Nuclei_Type + fd_ext));
   data->SetBranchStatus("*",0);
   data->SetBranchStatus("Q2",1);
   data->SetBranchStatus("Nu",1);
   data->SetBranchStatus("PhiPQ",1);
-  data->SetBranchStatus("Pt",1);
   data->SetBranchStatus("Xf",1);
   data->SetBranchStatus("Zh",1);
   data->SetBranchStatus("TargType",1);
-  data->SetBranchStatus("W",1);
   data->SetBranchStatus("P",1);
+  #if SMORAN==1
+    data->SetBranchStatus("Pt2",1);
+  #else
+    data->SetBranchStatus("Pt",1);
+    data->SetBranchStatus("W",1);
+  #endif
 
   // RECONSTRUCTED NTUPLE FOR DEUTERIUM
   TChain *reconstructed_D = new TChain("ntuple_accept");
-  for(Int_t q = 0; q < nSimuFiles; q++){
-    reconstructed_D->Add(Form(f_location + "D%d"+ fs_ext, q+1));
-  }
+  #if SMORAN==1
+    reconstructed_D->Add(Form(f_location + "D" + fs_ext));
+  #else
+    for(Int_t q = 0; q < nSimuFiles; q++){
+      reconstructed_D->Add(Form(f_location + "D%d"+ fs_ext, q+1));
+    }
+  #endif
+
   reconstructed_D->SetBranchStatus("*",0);
   reconstructed_D->SetBranchStatus("Q2",1);
   reconstructed_D->SetBranchStatus("Nu",1);
   reconstructed_D->SetBranchStatus("PhiPQ",1);
-  reconstructed_D->SetBranchStatus("Pt",1);
   reconstructed_D->SetBranchStatus("Xf",1);
   reconstructed_D->SetBranchStatus("Zh",1);
   reconstructed_D->SetBranchStatus("TargType",1);
-  reconstructed_D->SetBranchStatus("W",1);
   reconstructed_D->SetBranchStatus("P",1);
+
+  #if SMORAN==1
+    reconstructed_D->SetBranchStatus("Pt2",1);
+  #else
+    reconstructed_D->SetBranchStatus("Pt",1);
+    reconstructed_D->SetBranchStatus("W",1);
+  #endif
 
   reconstructed_D->Draw(">>list_accD",cuts_simulD,"goff");
   reconstructed_D->SetEventList((TEventList*)gDirectory->Get("list_accD"));
 
   // RECONSTRUCTED NTUPLE FOR SOLID TARGET
   TChain *reconstructed_S = new TChain("ntuple_accept");
-  for(Int_t e = 0; e < nSimuFiles; e++){
-    reconstructed_S->Add(Form(f_location + Nuclei_Type +"%d" + fs_ext, e+1));
-  }
+  #if SMORAN==1
+    reconstructed_S->Add(Form(f_location + Nuclei_Type + fs_ext));
+  #else
+    for(Int_t q = 0; q < nSimuFiles; q++){
+      reconstructed_S->Add(Form(f_location + Nuclei_Type + "%d"+ fs_ext, q+1));
+    }
+  #endif
+    
   reconstructed_S->SetBranchStatus("*",0);
   reconstructed_S->SetBranchStatus("Q2",1);
   reconstructed_S->SetBranchStatus("Nu",1);
   reconstructed_S->SetBranchStatus("PhiPQ",1);
-  reconstructed_S->SetBranchStatus("Pt",1);
   reconstructed_S->SetBranchStatus("Xf",1);
   reconstructed_S->SetBranchStatus("Zh",1);
   reconstructed_S->SetBranchStatus("TargType",1);
-  reconstructed_S->SetBranchStatus("W",1);
   reconstructed_S->SetBranchStatus("P",1);
+
+  #if SMORAN==1
+    reconstructed_S->SetBranchStatus("Pt2",1);
+  #else
+    reconstructed_S->SetBranchStatus("Pt",1);
+    reconstructed_S->SetBranchStatus("W",1);
+  #endif
 
   reconstructed_S->Draw(">>list_accS",cuts_simulS,"goff");
   reconstructed_S->SetEventList((TEventList*)gDirectory->Get("list_accS"));
 
+
   // THROWN FOR DEUTERIUM
   TChain *thrown_D = new TChain("ntuple_thrown");
-  for(Int_t w = 0; w < nSimuFiles; w++){
-    thrown_D->Add(Form(f_location+"D%d" + fs_ext, w+1));
-  }
+  #if SMORAN==1
+    thrown_D->Add(Form(f_location + "D" + fs_ext));
+  #else
+    for(Int_t w = 0; w < nSimuFiles; w++){
+      thrown_D->Add(Form(f_location+"D%d" + fs_ext, w+1));
+    }
+  #endif
+
   thrown_D->SetBranchStatus("*",0);
   thrown_D->SetBranchStatus("Q2",1);
   thrown_D->SetBranchStatus("Nu",1);
@@ -185,17 +222,24 @@ int main(int argc, char **argv)
   thrown_D->SetBranchStatus("Xf",1);
   thrown_D->SetBranchStatus("Zh",1);
   thrown_D->SetBranchStatus("TargType",1);
-  thrown_D->SetBranchStatus("W",1);
   thrown_D->SetBranchStatus("P",1);
+  #if SMORAN!=1
+    thrown_D->SetBranchStatus("W",1);
+  #endif
 
   thrown_D->Draw(">>list_thrD",cuts_simulD,"goff");
   thrown_D->SetEventList((TEventList*)gDirectory->Get("list_thrD"));
   
   // THROWN FOR SOLID TARGET
   TChain *thrown_S = new TChain("ntuple_thrown");
-  for(Int_t r = 0; r < nSimuFiles; r++){
-    thrown_S->Add(Form(f_location + Nuclei_Type + "%d" + fs_ext, r+1));
-  }
+  #if SMORAN==1
+    thrown_S->Add(Form(f_location + Nuclei_Type + fs_ext));
+  #else
+    for(Int_t r = 0; r < nSimuFiles; r++){
+      thrown_S->Add(Form(f_location + Nuclei_Type + "%d" + fs_ext, r+1));
+    }
+  #endif
+
   thrown_S->SetBranchStatus("*",0);
   thrown_S->SetBranchStatus("Q2",1);
   thrown_S->SetBranchStatus("Nu",1);
@@ -204,23 +248,28 @@ int main(int argc, char **argv)
   thrown_S->SetBranchStatus("Xf",1);
   thrown_S->SetBranchStatus("Zh",1);
   thrown_S->SetBranchStatus("TargType",1);
-  thrown_S->SetBranchStatus("W",1);
   thrown_S->SetBranchStatus("P",1);
+  #if SMORAN!=1
+    thrown_D->SetBranchStatus("W",1);
+  #endif
 
   thrown_S->Draw(">>list_thrS",cuts_simulS,"goff");
   thrown_S->SetEventList((TEventList*)gDirectory->Get("list_thrS"));
 
 
   //  CREATING THE OUTPUT FILE
-  TFile *plots = new TFile(Form("output/1Dfout_"+Nuclei_Type+"_%dnubin%d.root", N_Nu, Nu_bin),"RECREATE");
-  //cout << "OK" << endl;
+  #if SMORAN==1
+    TFile *plots = new TFile(Form("output/SM1Dfout_"+Nuclei_Type+"_%dnubin%d.root", N_Nu, Nu_bin),"RECREATE");
+  #else
+    TFile *plots = new TFile(Form("output/HH1Dfout_"+Nuclei_Type+"_%dnubin%d.root", N_Nu, Nu_bin),"RECREATE");
+  #endif
 
   //--------CREATING HISTOGRAMS--------//
 
   TH1F *D = new TH1F("D", "D", nbins, E_min, E_max);           // Deuterium DATA
   TH1F *accD = new TH1F("accD", "accD", nbins, E_min, E_max);  // Deuterium Acceptance
 
-  std::map<int,TH1F*> histograms, acceptances, diffAcc, Nuclei_ACC;
+  std::map<int,TH1F*> histograms, acceptances;
   for(int i = shift_min; i<=shift_max; i++){
     histograms[i] = new TH1F(Form("Nuclei_shift%d",i),Form("Nuclei_shift%d",i),nbins,E_min,E_max);
     histograms[i]->Sumw2();
@@ -259,16 +308,16 @@ int main(int argc, char **argv)
   TH1F *acceptance_histo = new TH1F("acceptance_histo","",nbins,E_min,E_max);
   acceptance_histo->Divide(reconstructed_histo,thrown_histo,1,1,"B");
   // Saving ACC histograms to file
-  TH1F *hDA = (TH1F*) acceptance_histo->Clone();
+  /*TH1F *hDA = (TH1F*) acceptance_histo->Clone();
   hDA->SetName(Form("acc_D_nubin%d", Nu_bin));
   hDA->Write();
-
+  */
   TH1F *acceptance_correction_histo = new TH1F("acceptance_correction_histo","",nbins,E_min,E_max);
   acceptance_correction_histo->Divide(data_histo,acceptance_histo,1,1);
   /*TH1F *hDC = (TH1F*) acceptance_correction_histo->Clone();
-  hDC->SetName(Form("acc_correctedD%d%d", Nu_bin, j));
-  hDC->Write();*/
-
+  hDC->SetName(Form("acc_corr_D%d", Nu_bin));
+  hDC->Write();
+  */
   // Filling the Corrected Deuterium histogram
   D->Add(acceptance_correction_histo, 1);
   accD->Add(acceptance_histo, 1);
@@ -280,7 +329,7 @@ int main(int argc, char **argv)
   delete reconstructed_histo;
   //delete hDT;
   //delete hDR;
-  delete hDA;
+  //delete hDA;
   //delete hDC;
 
   //---ACCEPTANCE FOR SOLID TARGET::::ENERGY SHIFT LOOP----//
@@ -288,8 +337,16 @@ int main(int argc, char **argv)
 
     energy_shift = step_E*shift;
 
+    //Double_t W = TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2);
+    //Double_t Pt = TMath::Sqrt(Pt2);
+
+
     // XF MODIFIED CUT
-    TCut xf_mod = Form("((Nu + 0.9385)*(TMath::Sqrt((P+%f)*(P+%f)-(P+%f)*(Pt/P)*(P+%f)*(Pt/P))-TMath::Sqrt(Q2+Nu*Nu)*(Zh+%f/Nu)*Nu/(Nu+0.9385))/W)/((TMath::Sqrt(TMath::Power(W*W-0.9392*0.9392+0.1395*0.1395,2)-4.*0.1395*0.1395*W*W)/2./W))>0.1", energy_shift, energy_shift, energy_shift, energy_shift, energy_shift); \
+    #if SMORAN==1
+      TCut xf_mod = Form("((Nu + 0.9385)*(TMath::Sqrt((P+%f)*(P+%f)-(P+%f)*(TMath::Sqrt(Pt2)/P)*(P+%f)*(TMath::Sqrt(Pt2)/P))-TMath::Sqrt(Q2+Nu*Nu)*(Zh+%f/Nu)*Nu/(Nu+0.9385))/TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2))/((TMath::Sqrt(TMath::Power(TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)*TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)-0.9392*0.9392+0.1395*0.1395,2)-4.*0.1395*0.1395*TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)*TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2))/2./TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)))>0.1", energy_shift, energy_shift, energy_shift, energy_shift, energy_shift);
+    #else
+      TCut xf_mod = Form("((Nu + 0.9385)*(TMath::Sqrt((P+%f)*(P+%f)-(P+%f)*(Pt/P)*(P+%f)*(Pt/P))-TMath::Sqrt(Q2+Nu*Nu)*(Zh+%f/Nu)*Nu/(Nu+0.9385))/W)/((TMath::Sqrt(TMath::Power(W*W-0.9392*0.9392+0.1395*0.1395,2)-4.*0.1395*0.1395*W*W)/2./W))>0.1", energy_shift, energy_shift, energy_shift, energy_shift, energy_shift);
+    #endif
 
     cuts_loop=Q2_cut&&Nu_cut&&Phi_cut&&Pt2_cut&&Target_cutS&&xf_mod;   //NO OLVIDARSE EL XF MOD CUT
     //TCut cut = Q2_cut&&Nu_cut&&Target_cutS;
@@ -325,14 +382,14 @@ int main(int argc, char **argv)
 
     TH1F *acc_histo = new TH1F("acc_histo", "", nbins, E_min, E_max);
     acc_histo->Divide(reconstructed_histo, thrown_histo, 1, 1, "B");
-    TH1F *hA = (TH1F*) acc_histo->Clone();
+    /*TH1F *hA = (TH1F*) acc_histo->Clone();
     hA->SetName(Form("acc_"+Nuclei_Type+"_shift%d_nubin%d", shift, Nu_bin));
     hA->Write();
-     
+    */ 
     TH1F *acc_corr_histo = new TH1F("acc_corr_histo", "", nbins, E_min, E_max);
     acc_corr_histo->Divide(data_histo, acc_histo, 1, 1);
     /*TH1F *hC = (TH1F*) acc_corr_histo->Clone();
-    hC->SetName(Form("acc_corrected"+Nuclei_Type+"_shift%d_%d%d", shift,  Nu_bin, j));
+    hC->SetName(Form("acc_corrected"+Nuclei_Type+"_shift%d_nubin%d", shift,  Nu_bin));
     hC->Write();
     */
 
@@ -348,7 +405,7 @@ int main(int argc, char **argv)
     delete acc_corr_histo;
     //delete hT;
     //delete hR;
-    delete hA;
+    //delete hA;
     //delete Xf;
     //delete Data_xF;
     //delete hC;
