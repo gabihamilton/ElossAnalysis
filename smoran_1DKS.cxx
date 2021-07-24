@@ -79,8 +79,8 @@ int main(int argc, char *argv[]){
 	cout<< "The cut on Xf is " << limit_xf << endl;
 
 	//------Opening data files-----//
-	TFile *file = new TFile(Form("/Users/gbibim/Documents/ElossAnalysis/chargedPions//" + Nuclei_Type + "_data.root"));
-	//TFile *file = new TFile(Form("/user/b/brooksw/bruno/" + Nuclei_Type + "_data.root"));
+	//TFile *file = new TFile(Form("/Users/gbibim/Documents/ElossAnalysis/chargedPions//" + Nuclei_Type + "_data.root"));
+	TFile *file = new TFile(Form("/user/b/brooksw/bruno/" + Nuclei_Type + "_data.root"));
 
 	//-----Opening TTree----//
 
