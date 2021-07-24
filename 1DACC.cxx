@@ -118,15 +118,14 @@ int main(int argc, char **argv)
   TCut Phi_cut_S = Form("PhiPQ>%f && PhiPQ<%f", Phi_min, Phi_max);
   #if SMORAN==1
     TCut Pt2_cut_S = Form("Pt2>%f && Pt2<%f", Pt2_min, Pt2_max);
-    TCut cuts_simulD = Q2_cut_S&&Nu_cut_S&&Phi_cut_S&&Pt2_cut_S;
-    TCut cuts_simulS = Q2_cut_S&&Nu_cut_S&&Phi_cut_S&&Pt2_cut_S;
+    TCut PT = Form("Pt*Pt>%f && Pt*Pt<%f", Pt2_min, Pt2_max);
+    TCut cut_thrown = Q2_cut_S&&Nu_cut_S&&Phi_cut_S&&PT;
   #else
     TCut Pt2_cut_S = Form("Pt*Pt>%f && Pt*Pt<%f", Pt2_min, Pt2_max);
-    TCut cuts_simulD = Target_cutD&&Q2_cut_S&&Nu_cut_S&&Phi_cut_S&&Pt2_cut_S;
-    TCut cuts_simulS = Target_cutS&&Q2_cut_S&&Nu_cut_S&&Phi_cut_S&&Pt2_cut_S;
   #endif
 
-
+  TCut cuts_simulD = Target_cutD&&Q2_cut_S&&Nu_cut_S&&Phi_cut_S&&Pt2_cut_S;
+  TCut cuts_simulS = Target_cutS&&Q2_cut_S&&Nu_cut_S&&Phi_cut_S&&Pt2_cut_S;
   
 
   TCut xf_cut = "Xf>0.1"; //  Typical xF cut
@@ -236,7 +235,7 @@ int main(int argc, char **argv)
     thrown_D->SetBranchStatus("TargType",1);
   #endif
 
-  thrown_D->Draw(">>list_thrD",cuts_simulD,"goff");
+  thrown_D->Draw(">>list_thrD",cut_thrown,"goff");
   thrown_D->SetEventList((TEventList*)gDirectory->Get("list_thrD"));
   
   // THROWN FOR SOLID TARGET
@@ -262,7 +261,7 @@ int main(int argc, char **argv)
     thrown_S->SetBranchStatus("TargType",1);
   #endif
 
-  thrown_S->Draw(">>list_thrS",cuts_simulS,"goff");
+  thrown_S->Draw(">>list_thrS",cut_thrown,"goff");
   thrown_S->SetEventList((TEventList*)gDirectory->Get("list_thrS"));
 
 
