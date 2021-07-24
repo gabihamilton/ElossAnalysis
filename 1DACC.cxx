@@ -56,7 +56,7 @@ const Double_t E_max = 2.5;
 const double limit_xf = 0.1;         // Cut in xF
 const int nshift_E = 99;             // total number of shifts in Energy
 const double step_E = 1.0/1000.0;    // size of energy shift
-const Int_t nbins = 100;             // number of energy bins
+//const Int_t nbins = 100;             // number of energy bins
 
 const Int_t nSimuFiles = 4;
 
@@ -90,6 +90,8 @@ int main(int argc, char **argv)
   Nuclei_Type = (TString) argv[1];  // C for Carbon, Fe for Iron and Pb for Lead
   N_Nu = atoi(argv[2]);             // Number of Nu bins
   Nu_bin = atoi(argv[3]);           // Nu bin Index
+  Int_t nbins = atoi(argv[4]);
+
   
   Double_t Nu_min = 3.2 + Nu_bin*0.1;
   Double_t Nu_max = Nu_min + 0.1;
@@ -259,9 +261,9 @@ int main(int argc, char **argv)
 
   //  CREATING THE OUTPUT FILE
   #if SMORAN==1
-    TFile *plots = new TFile(Form("output/SM1Dfout_"+Nuclei_Type+"_%dnubin%d.root", N_Nu, Nu_bin),"RECREATE");
+    TFile *plots = new TFile(Form("output/SM1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
   #else
-    TFile *plots = new TFile(Form("output/HH1Dfout_"+Nuclei_Type+"_%dnubin%d.root", N_Nu, Nu_bin),"RECREATE");
+    TFile *plots = new TFile(Form("output/HH1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
   #endif
 
   //--------CREATING HISTOGRAMS--------//
