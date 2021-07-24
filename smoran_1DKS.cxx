@@ -127,7 +127,7 @@ int main(int argc, char *argv[]){
 	//tree->SetBranchAddress("NmbPion",&NmbPion);
 
 	//Int_t nentries = tree->GetEntries();
-	Int_t nentries = 1000000;
+	Int_t nentries = 100000;
 
 	//-----Creating output file-----//	
 	TFile *fout = new TFile(Form("output/SKS1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
@@ -159,10 +159,6 @@ int main(int argc, char *argv[]){
 		TGraph *gpKSb = new TGraph();     	// Graph for the Binned KS Test
 		TGraph *gpWKSb = new TGraph();    	// Graph for the Binned Weighted KS Test
 
-		dataS.clear();
-	   	dataD.clear();
-	   	weightD.clear();
-	   	weightS.clear();
 
 		// Parameters arrays for Fits
 		Double_t parD[n+1];
@@ -225,6 +221,11 @@ int main(int argc, char *argv[]){
 		//--------LOOP OVER THE SHIFTS---------//
 		cout << "Starting loop over Shifts" << endl;
 		for (int shift = 0; shift <= nshift_E; ++shift){ 
+			dataS.clear();
+		   	dataD.clear();
+		   	weightD.clear();
+		   	weightS.clear();
+
 
 			// Starting Loop over Q2 for Solid Target
 /*
