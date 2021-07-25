@@ -437,7 +437,7 @@ int main(int argc, char *argv[]){
 		multi->GetYaxis()->SetTitle("p_{0}"); //"-Log(p_{0})"
 		
 		canvas->BuildLegend();
-		canvas->SaveAs(Form("output/SCutsProb_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max*100), n, nbins));
+		canvas->SaveAs(Form("output/SMCutsProb_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max*100), n, nbins));
 		canvas->Write();
 	
 		//-----ELOSS HISTOGRAMS PLOTS-----//
@@ -584,7 +584,7 @@ int main(int argc, char *argv[]){
 	   	legend->Draw();
 
 		//Chu->BuildLegend();
-		Chu->SaveAs(Form("output/Energy_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max), n, nbins));
+		Chu->SaveAs(Form("output/SMEnergy_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max), n, nbins));
 		
 
 		//DAcc->SetName(Form("Acc_Corr_D_%d", Nu_bin));
@@ -642,7 +642,7 @@ int main(int argc, char *argv[]){
 	multi->GetYaxis()->SetTitle("dE [MeV]"); 
 
 	canvas->BuildLegend();
-	canvas->SaveAs(Form("output/SCutsEloss_"+Nuclei_Type+"_%dnubins_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, nentries, int(E_min), int(E_max), n, nbins));
+	canvas->SaveAs(Form("output/SMCutsEloss_"+Nuclei_Type+"_%dnubins_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, nentries, int(E_min), int(E_max), n, nbins));
 	//canvas->Write();
 
 	std::cout<<" ABOUT TO CLOSE " << std::endl;
