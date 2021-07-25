@@ -60,7 +60,7 @@ const double step_E = 1.0/1000.0;    // size of energy shift
 
 const Int_t nSimuFiles = 4;
 
-#if SMORAN==1
+#ifdef SMORAN
   const TString f_location = "/user/b/brooksw/bruno/";
 #else
   const TString f_location = "/user/h/hamilton/ThesisProj/data/"; // The location of data and simulation files with ntuples inside
@@ -116,16 +116,14 @@ int main(int argc, char **argv)
   TCut Nu_cut_S = Form("Nu>%f && Nu<%f", Nu_min, Nu_max);
   TCut Q2_cut_S = Form("Q2>%f && Q2<%f", Q2_min, Q2_max);                 
   TCut Phi_cut_S = Form("PhiPQ>%f && PhiPQ<%f", Phi_min, Phi_max);
-  #if SMORAN==1
+  #ifdef SMORAN
     TCut Pt2_cut_S = Form("Pt2>%f && Pt2<%f", Pt2_min, Pt2_max);
-    TCut PT = Form("Pt*Pt>%f && Pt*Pt<%f", Pt2_min, Pt2_max);
-    TCut cut_thrown = Q2_cut_S&&Nu_cut_S&&Phi_cut_S&&PT;
   #else
     TCut Pt2_cut_S = Form("Pt*Pt>%f && Pt*Pt<%f", Pt2_min, Pt2_max);
   #endif
 
-  TCut cuts_simulD = Target_cutD&&Q2_cut_S&&Nu_cut_S&&Phi_cut_S&&Pt2_cut_S;
-  TCut cuts_simulS = Target_cutS&&Q2_cut_S&&Nu_cut_S&&Phi_cut_S&&Pt2_cut_S;
+  TCut cuts_simulD = Q2_cut_S&&Nu_cut_S&&Phi_cut_S&&Pt2_cut_S;
+  TCut cuts_simulS = Q2_cut_S&&Nu_cut_S&&Phi_cut_S&&Pt2_cut_S;
   
 
   TCut xf_cut = "Xf>0.1"; //  Typical xF cut
@@ -146,7 +144,7 @@ int main(int argc, char **argv)
   data->SetBranchStatus("Zh",1);
   data->SetBranchStatus("TargType",1);
   data->SetBranchStatus("P",1);
-  #if SMORAN==1
+  #ifdef SMORAN
     data->SetBranchStatus("Pt2",1);
   #else
     data->SetBranchStatus("Pt",1);
@@ -155,7 +153,7 @@ int main(int argc, char **argv)
 
   // RECONSTRUCTED NTUPLE FOR DEUTERIUM
   TChain *reconstructed_D = new TChain("ntuple_accept");
-  #if SMORAN==1
+  #ifdef SMORAN
     reconstructed_D->Add(Form(f_location + "D" + fs_ext));
   #else
     for(Int_t q = 0; q < nSimuFiles; q++){
@@ -172,7 +170,7 @@ int main(int argc, char **argv)
   reconstructed_D->SetBranchStatus("TargType",1);
   reconstructed_D->SetBranchStatus("P",1);
 
-  #if SMORAN==1
+  #ifdef SMORAN
     reconstructed_D->SetBranchStatus("Pt2",1);
   #else
     reconstructed_D->SetBranchStatus("Pt",1);
@@ -184,7 +182,7 @@ int main(int argc, char **argv)
 
   // RECONSTRUCTED NTUPLE FOR SOLID TARGET
   TChain *reconstructed_S = new TChain("ntuple_accept");
-  #if SMORAN==1
+  #ifdef SMORAN
     reconstructed_S->Add(Form(f_location + Nuclei_Type + fs_ext));
   #else
     for(Int_t q = 0; q < nSimuFiles; q++){
@@ -201,7 +199,7 @@ int main(int argc, char **argv)
   reconstructed_S->SetBranchStatus("TargType",1);
   reconstructed_S->SetBranchStatus("P",1);
 
-  #if SMORAN==1
+  #ifdef SMORAN
     reconstructed_S->SetBranchStatus("Pt2",1);
   #else
     reconstructed_S->SetBranchStatus("Pt",1);
@@ -214,7 +212,7 @@ int main(int argc, char **argv)
 
   // THROWN FOR DEUTERIUM
   TChain *thrown_D = new TChain("ntuple_thrown");
-  #if SMORAN==1
+  #ifdef SMORAN
     thrown_D->Add(Form(f_location + "D" + fs_ext));
   #else
     for(Int_t w = 0; w < nSimuFiles; w++){
@@ -226,21 +224,23 @@ int main(int argc, char **argv)
   thrown_D->SetBranchStatus("Q2",1);
   thrown_D->SetBranchStatus("Nu",1);
   thrown_D->SetBranchStatus("PhiPQ",1);
-  thrown_D->SetBranchStatus("Pt",1);
   thrown_D->SetBranchStatus("Xf",1);
   thrown_D->SetBranchStatus("Zh",1);
   thrown_D->SetBranchStatus("P",1);
-  #if SMORAN!=1
+  #ifdef SMORAN
+    thrown_D->SetBranchStatus("Pt2",1);
+  #else
     thrown_D->SetBranchStatus("W",1);
-    thrown_D->SetBranchStatus("TargType",1);
+    //thrown_D->SetBranchStatus("TargType",1);
+    thrown_D->SetBranchStatus("Pt",1);
   #endif
 
-  thrown_D->Draw(">>list_thrD",cut_thrown,"goff");
+  thrown_D->Draw(">>list_thrD",cuts_simulD,"goff");
   thrown_D->SetEventList((TEventList*)gDirectory->Get("list_thrD"));
   
   // THROWN FOR SOLID TARGET
   TChain *thrown_S = new TChain("ntuple_thrown");
-  #if SMORAN==1
+  #ifdef SMORAN
     thrown_S->Add(Form(f_location + Nuclei_Type + fs_ext));
   #else
     for(Int_t r = 0; r < nSimuFiles; r++){
@@ -252,21 +252,23 @@ int main(int argc, char **argv)
   thrown_S->SetBranchStatus("Q2",1);
   thrown_S->SetBranchStatus("Nu",1);
   thrown_S->SetBranchStatus("PhiPQ",1);
-  thrown_S->SetBranchStatus("Pt",1);
   thrown_S->SetBranchStatus("Xf",1);
   thrown_S->SetBranchStatus("Zh",1);
   thrown_S->SetBranchStatus("P",1);
-  #if SMORAN!=1
+  #ifdef SMORAN
+    thrown_S->SetBranchStatus("Pt2",1);
+  #else
     thrown_D->SetBranchStatus("W",1);
-    thrown_S->SetBranchStatus("TargType",1);
+    //thrown_S->SetBranchStatus("TargType",1);
+    thrown_S->SetBranchStatus("Pt",1);
   #endif
 
-  thrown_S->Draw(">>list_thrS",cut_thrown,"goff");
+  thrown_S->Draw(">>list_thrS",cuts_simulS,"goff");
   thrown_S->SetEventList((TEventList*)gDirectory->Get("list_thrS"));
 
 
   //  CREATING THE OUTPUT FILE
-  #if SMORAN==1
+  #ifdef SMORAN
     TFile *plots = new TFile(Form("output/SM1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
   #else
     TFile *plots = new TFile(Form("output/HH1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
@@ -292,13 +294,13 @@ int main(int argc, char **argv)
   Nu_cut = Form("Nu>%f && Nu<%f", Nu_min, Nu_max);  //  Cut for Nu bin
 
   //----ACCEPTANCE FOR DEUTERIUM-----/
-  cuts_loop=Phi_cut_S&&Pt2_cut_S&&Q2_cut_S&&Nu_cut&&Target_cutD&&xf_cut;
+  cuts_loop=Phi_cut_S&&Pt2_cut_S&&Q2_cut_S&&Nu_cut&&xf_cut;
 
   TH1F *data_histo = new TH1F("data_histo","",nbins,E_min,E_max);
   TH1F *thrown_histo = new TH1F("thrown_histo","",nbins,E_min,E_max);
   TH1F *reconstructed_histo = new TH1F("reconstructed_histo","",nbins,E_min,E_max);
 
-  data->Draw("Zh*Nu>>data_histo",cuts_loop,"goff");
+  data->Draw("Zh*Nu>>data_histo",cuts_loop&&Target_cutD,"goff");
   data_histo->Sumw2();
 
   thrown_D->Draw("Zh*Nu>>thrown_histo",cuts_loop,"goff");
@@ -350,13 +352,13 @@ int main(int argc, char **argv)
 
 
     // XF MODIFIED CUT
-    #if SMORAN==1
+    #ifdef SMORAN
       TCut xf_mod = Form("((Nu + 0.9385)*(TMath::Sqrt((P+%f)*(P+%f)-(P+%f)*(TMath::Sqrt(Pt2)/P)*(P+%f)*(TMath::Sqrt(Pt2)/P))-TMath::Sqrt(Q2+Nu*Nu)*(Zh+%f/Nu)*Nu/(Nu+0.9385))/TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2))/((TMath::Sqrt(TMath::Power(TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)*TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)-0.9392*0.9392+0.1395*0.1395,2)-4.*0.1395*0.1395*TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)*TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2))/2./TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)))>0.1", energy_shift, energy_shift, energy_shift, energy_shift, energy_shift);
     #else
       TCut xf_mod = Form("((Nu + 0.9385)*(TMath::Sqrt((P+%f)*(P+%f)-(P+%f)*(Pt/P)*(P+%f)*(Pt/P))-TMath::Sqrt(Q2+Nu*Nu)*(Zh+%f/Nu)*Nu/(Nu+0.9385))/W)/((TMath::Sqrt(TMath::Power(W*W-0.9392*0.9392+0.1395*0.1395,2)-4.*0.1395*0.1395*W*W)/2./W))>0.1", energy_shift, energy_shift, energy_shift, energy_shift, energy_shift);
     #endif
 
-    cuts_loop=Q2_cut&&Nu_cut&&Phi_cut&&Pt2_cut&&Target_cutS&&xf_mod;   //NO OLVIDARSE EL XF MOD CUT
+    cuts_loop=Q2_cut&&Nu_cut&&Phi_cut&&Pt2_cut&&xf_mod;   //NO OLVIDARSE EL XF MOD CUT
     //TCut cut = Q2_cut&&Nu_cut&&Target_cutS;
 
     TH1F *data_histo = new TH1F("data_histo","",nbins,E_min,E_max);
@@ -370,7 +372,7 @@ int main(int argc, char **argv)
     //Xf->SetName(Form("Xf_shift%d_%d%d", shift, Nu_bin, j));
     //Xf->Write();
      
-    data->Draw(Form("(Nu*Zh)+%f>>data_histo", energy_shift), cuts_loop, "goff");
+    data->Draw(Form("(Nu*Zh)+%f>>data_histo", energy_shift), cuts_loop&&Target_cutS, "goff");
     data_histo->Sumw2();
 
     thrown_S->Draw(Form("(Nu*Zh)+%f>>thrown_histo", energy_shift), cuts_loop, "goff");
