@@ -1,3 +1,6 @@
+#define SMORAN 1
+
+
 #include <numeric>      // std::iota
 #include <vector>
 #include <algorithm>
@@ -47,7 +50,7 @@ const double E_max = 2.0; 			// Minimum Energy
 const double E_min = 0.5;  			// Maximum Energy
 const double limit_xf = 0.1;		// xF cut
 const int nshift_E = 99;			// Number of shifts in Energy
-const double step_E = 1.0/1000.0;	// Size of Shifts in Energy
+const double step_E = 2.5/1000.0;	// Size of Shifts in Energy
 //const int nbins = 100;				// Number of Energy bins
 
 TString Nuclei_Type;
@@ -79,8 +82,8 @@ int main(int argc, char *argv[]){
 	cout<< "The cut on Xf is " << limit_xf << endl;
 
 	//------Opening data files-----//
-	//TFile *file = new TFile(Form("/Users/gbibim/Documents/ElossAnalysis/chargedPions//" + Nuclei_Type + "_data.root"));
-	TFile *file = new TFile(Form("/user/b/brooksw/bruno/" + Nuclei_Type + "_data.root"));
+	TFile *file = new TFile(Form("/Users/gbibim/Documents/ElossAnalysis/chargedPions//" + Nuclei_Type + "_data.root"));
+	//TFile *file = new TFile(Form("/user/b/brooksw/bruno/" + Nuclei_Type + "_data.root"));
 
 	//-----Opening TTree----//
 
@@ -126,8 +129,8 @@ int main(int argc, char *argv[]){
 	tree->SetBranchAddress("deltaZ",&deltaZ);
 	//tree->SetBranchAddress("NmbPion",&NmbPion);
 
-	Int_t nentries = tree->GetEntries();
-	//Int_t nentries = 100000;
+	//Int_t nentries = tree->GetEntries();
+	Int_t nentries = 100000;
 
 	//-----Creating output file-----//	
 	TFile *fout = new TFile(Form("output/SKS1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
@@ -412,6 +415,7 @@ int main(int argc, char *argv[]){
 		gpWKS->SetLineStyle(9);
 		gpKSb->SetLineWidth(3);
 		gpWKSb->SetLineWidth(3);
+		gpWKSb->SetLineStyle(9);
 
 		gpKS->SetTitle("Unbinned KS");
 		gpWKS->SetTitle("Weighted Unbinned KS");
@@ -519,23 +523,69 @@ int main(int argc, char *argv[]){
 		*/
 		fout->cd();
 
-		histograms[i_KS]->SetName(Form("KS_%d", Nu_bin));
-		histograms[i_KS]->Write();
-
-		histogramsW[i_WKS]->SetName(Form("WKS_%d", Nu_bin));
-		histogramsW[i_WKS]->Write();
-
-		histograms[i_KSb]->SetName(Form("KSb_%d", Nu_bin));
-		histograms[i_KSb]->Write();
-
-		histogramsW[i_WKSb]->SetName(Form("WKSb_%d", Nu_bin));
-		histogramsW[i_WKSb]->Write();
+		TCanvas *Chu = new TCanvas();
 
 		D->SetName(Form("D_%d", Nu_bin));
-		D->Write();
+		D->SetTitle(Form("Energy for Target "+Nuclei_Type+" Nu bin %d", Nu_bin));
+		D->SetLineColor(9);
+		//D->SetMarkerColor(9);
+		//D->SetMarkerStyle(33);
+		D->Write("HIST L P");
+
+		histograms[i_KS]->SetName(Form("KS_%d", Nu_bin));
+		TH1F *KS = (TH1F*) histograms[i_KS]->Clone();
+
+		histogramsW[i_WKS]->SetName(Form("WKS_%d", Nu_bin));
+		TH1F *WKS = (TH1F*) histograms[i_WKS]->Clone();
+
+		histograms[i_KSb]->SetName(Form("KSb_%d", Nu_bin));
+		TH1F *KSb = (TH1F*) histograms[i_KSb]->Clone();
+
+		histogramsW[i_WKSb]->SetName(Form("WKSb_%d", Nu_bin));
+		TH1F *WKSb = (TH1F*) histograms[i_WKSb]->Clone();
+
+		KS->SetLineColor(4);
+		KS->SetMarkerColor(4);
+		KS->SetMarkerStyle(20);
+		KS->Draw("HIST same L P");
+
+		WKS->SetName(Form("WKS_%d", Nu_bin));
+		WKS->SetLineColor(1);
+		WKS->SetMarkerColor(1);
+		WKS->SetMarkerStyle(30);
+		WKS->Draw("HIST same L P");
+
+		KSb->SetName(Form("KSb_%d", Nu_bin));
+		KSb->SetLineColor(6);
+		KSb->SetMarkerColor(6);
+		KSb->SetMarkerStyle(22);
+		KSb->Draw("HIST same L P");
+
+		WKSb->SetName(Form("WKSb_%d", Nu_bin));
+		WKSb->SetLineColor(2);
+		WKSb->SetMarkerColor(2);
+		WKSb->SetMarkerStyle(23);
+		WKSb->Draw("HIST same L P");
+
 
 		DW->SetName(Form("Weighted_D_%d", Nu_bin));
 		DW->Write();
+
+		auto legend = new TLegend(0.3, 0.1, .5, .3, Form(Nuclei_Type+" Target, Nu bin %d", Nu_bin), "brNDC");
+	 
+	   	legend->SetNColumns(1);
+	 
+		legend->AddEntry(D, "Deuterium"); 
+	   	legend->AddEntry(KS, Form("KS shift %d", i_KS), "l");
+	   	legend->AddEntry(WKS, Form("WKS shift %d", i_WKS), "l");
+	   	legend->AddEntry(KSb, Form("KSb shift %d", i_KSb), "l");
+	   	legend->AddEntry(WKSb, Form("WKSb shift %d", i_WKSb), "l");
+	 
+	   	legend->Draw();
+
+		//Chu->BuildLegend();
+		Chu->SaveAs(Form("output/Energy_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max), n, nbins));
+		
 
 		//DAcc->SetName(Form("Acc_Corr_D_%d", Nu_bin));
 		//DAcc->Write();
@@ -593,7 +643,7 @@ int main(int argc, char *argv[]){
 
 	canvas->BuildLegend();
 	canvas->SaveAs(Form("output/SCutsEloss_"+Nuclei_Type+"_%dnubins_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, nentries, int(E_min), int(E_max), n, nbins));
-	canvas->Write();
+	//canvas->Write();
 
 	std::cout<<" ABOUT TO CLOSE " << std::endl;
 	fout->Close();
