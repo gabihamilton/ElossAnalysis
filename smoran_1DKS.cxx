@@ -180,7 +180,7 @@ int main(int argc, char *argv[]){
 		TF1 * funcS = (TF1*) gROOT->GetFunction(Form("chebyshev%d", n));
 		funcS->SetRange(E_min,E_max);
 
-		TFile *acc = new TFile(Form("output/last/SM1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins)); // Acceptance files
+		TFile *acc = new TFile(Form("output/SM1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins)); // Acceptance files
 
 		//-----Histograms with Energy distribution-----//
 		TH1F *D = new TH1F("D","D",nbins,E_min,E_max);
