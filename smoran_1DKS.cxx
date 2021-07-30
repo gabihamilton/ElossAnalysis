@@ -130,7 +130,7 @@ int main(int argc, char *argv[]){
 	//tree->SetBranchAddress("NmbPion",&NmbPion);
 
 	Int_t nentries = tree->GetEntries();
-	//Int_t nentries = 100000;
+	//Int_t nentries = 1000000;
 
 	//-----Creating output file-----//	
 	TFile *fout = new TFile(Form("output/SKS1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
@@ -140,12 +140,18 @@ int main(int argc, char *argv[]){
 	TGraph *gElossWKS = new TGraph(); //  Graph for Eloss values fot the Weighted KS test
 	TGraph *gElossKSb = new TGraph(); //  Graph for Eloss values for the Binned KS test
 	TGraph *gElossWKSb = new TGraph(); // Graph for Eloss values for the Binned Weighted KS test
+	TGraph *gElossAKSb = new TGraph(); // Graph for Eloss values for the Acceptance corrected KS test
 
 	vector<double> dataS;
 	vector<double> dataD;
 	vector<double> weightD;
 	vector<double> weightS;
 
+	// Parameters arrays for Fits
+	Double_t parD[n+1];
+	Double_t parS[n+1];
+
+	TFile *fileFit = new TFile(Form("output/SMFIT1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
 
 	//--------Starting Loop Over Nu bins---------//
 	for(Int_t Nu_bin = 0; Nu_bin < N_Nu; Nu_bin++){
@@ -161,19 +167,20 @@ int main(int argc, char *argv[]){
 		TGraph *gpWKS = new TGraph();     	//Graph for the Unbinned Weighted KS Test
 		TGraph *gpKSb = new TGraph();     	// Graph for the Binned KS Test
 		TGraph *gpWKSb = new TGraph();    	// Graph for the Binned Weighted KS Test
+		TGraph *gpAKSb = new TGraph();      // Graph for the Accepted Binned KS Test
 
-
+/*
 		// Parameters arrays for Fits
 		Double_t parD[n+1];
 		Double_t parS[n+1];
-
+*/
 		// Fitting Functions
-		/*TF1 * funcD = (TF1*) gROOT->GetFunction(Form("chebyshev%d", n));
+		TF1 * funcD = (TF1*) gROOT->GetFunction(Form("chebyshev%d", n));
 		funcD->SetRange(E_min,E_max);
 		TF1 * funcS = (TF1*) gROOT->GetFunction(Form("chebyshev%d", n));
 		funcS->SetRange(E_min,E_max);
-*/
-		TFile *acc = new TFile(Form("output/1Dfout_"+Nuclei_Type+"_%dnubin%d.root", N_Nu, Nu_bin)); // Acceptance files
+
+		TFile *acc = new TFile(Form("output/last/SM1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins)); // Acceptance files
 
 		//-----Histograms with Energy distribution-----//
 		TH1F *D = new TH1F("D","D",nbins,E_min,E_max);
@@ -193,34 +200,43 @@ int main(int argc, char *argv[]){
 			histogramsW[i]->Sumw2();
 		}
 
-/*
-		TFile *fileFit = new TFile(Form("output/1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d_FITS.root", N_Nu, n, nbins), "RECREATE");
-
 
 		//-------Fitting Deuterium:--------//
 		cout << "Fitting Deuterium" << endl;
 
-		//TVirtualFitter::SetMaxIterations(100000);
+		TVirtualFitter::SetMaxIterations(100000);
 
-		TH1F *DAcc = (TH1F*)acc->Get(Form("acc_D_nubin%d", Nu_bin)); // Getting the right acc histogram
-		for (int i = 0; i <=n; ++i) funcD->SetParameter(i,1); 
+		TH1F *DAcc = (TH1F*)acc->Get("accD"); // Getting the right acc histogram
+
+		if (Nu_bin==0){
+			for (int i = 0; i <=n; ++i) funcD->SetParameter(i,1); 
+		}else{
+			funcD->SetParameters(parD);	
+		}
+
 
 		DAcc->Fit(funcD, "R");
-		cout << "OK" << endl;
 
+		funcD->GetParameters(&parD[0]);  // Saving Fit Parameters
+
+		Double_t chi = funcD->GetChisquare()/funcD->GetNDF();
+
+		while (chi>5){
+			funcD->SetParameters(parD);
+			DAcc->Fit(funcD, "R");
+			funcD->GetParameters(&parD[0]);  // Saving Fit Parameters
+			chi = funcD->GetChisquare()/funcD->GetNDF();
+		}
 
 		gStyle->SetOptFit(1);
-		//DAcc->Draw();
+		DAcc->Draw();
 	
 		// Saving fit
 		fileFit->cd();
 		DAcc->SetName(Form("fitD_"+Nuclei_Type+"_nubin%d", Nu_bin));
 		DAcc->Write();
 
-		funcD->GetParameters(&parD[0]);  // Saving Fit Parameters
-		//cout << parD[Q2_bin][0] << "  " << parD[Q2_bin][1] << "  " << parD[Q2_bin][2] << "  " << parD[Q2_bin][3]  endl;
 
-*/
 		//--------LOOP OVER THE SHIFTS---------//
 		cout << "Starting loop over Shifts" << endl;
 		for (int shift = 0; shift <= nshift_E; ++shift){ 
@@ -231,27 +247,40 @@ int main(int argc, char *argv[]){
 
 
 			// Starting Loop over Q2 for Solid Target
-/*
-   			cout << "Fitting the Solid Target Shift: " << shift << endl;
 
-			TH1F *h = (TH1F*)acc->Get(Form("acc_"+Nuclei_Type+"_shift%d_nubin%d", shift, Nu_bin)); // Getting the right acc histogram
-			for (int i = 0; i <=n; ++i) funcS->SetParameter(i,1); 
+   			cout << "Fitting the Solid Target Shift: " << shift << "  Nu bin: " << Nu_bin << endl;
 
+			TH1F *h = (TH1F*)acc->Get(Form("accNuclei_shift%d", shift)); // Getting the right acc histogram
+
+			if (shift==0){
+				for (int i = 0; i <=n; ++i) funcS->SetParameter(i,1); 
+			}else{
+				funcD->SetParameters(parS);
+			}
+
+   			TVirtualFitter::SetMaxIterations(100000);
     		h->Fit(funcS, "R");
 
-			//gStyle->SetOptFit(1);
-			//h->Draw();
+    		funcS->GetParameters(&parS[0]);	  //saving parametes  		
+		    Double_t sol_chi = funcS->GetChisquare()/funcS->GetNDF();
+		    int count=0;
+			while (sol_chi>5){
+				funcS->SetParameters(parS);
+				h->Fit(funcS, "R");
+				funcS->GetParameters(&parS[0]);	
+				sol_chi = funcS->GetChisquare()/funcS->GetNDF();
+			}
+
+			gStyle->SetOptFit(1);
+			h->Draw();
 		
 			// Saving fit
 			fileFit->cd();
 			h->SetName(Form("fit_"+Nuclei_Type+"_nubin%d_shift%d", Nu_bin, shift));
 			h->Write();
 
-    		funcS->GetParameters(&parS[0]);	    		
-	    	
-
 		   	cout << "Entering the loop over entries " << nentries << endl;
-*/
+
 		   	// Vectors for data and weights
 
 		   	double w1sum=0., w2sum=0.;
@@ -265,15 +294,15 @@ int main(int argc, char *argv[]){
 		      	//Apply Cuts bin in Nu
 		      	if(Nu > Nu_max || Nu < Nu_min) continue; 
 
-		      	if(PID!=211 && P<2.7 && T4<-0.6 && Nphe<15) continue;
+		      	if(PID!=211) continue; // && P<2.7 && T4<-0.6 && Nphe<15) continue;
 
-		      	if ( (T4>0.45 && P>3.3) || (T4>0.5 && P<3.3)) continue;
+		      	//if ( (T4>0.45 && P>3.3) || (T4>0.5 && P<3.3)) continue;
 
 		    	// Deuterium
 		      	if(TargType==1 && Xf>limit_xf && Zh*Nu<E_max && Zh*Nu>E_min){
 
-		        	//funcD->SetParameters(parD);
-		        	double w = 1.;//1./(funcD->Eval(Zh*Nu, 0, 0));
+		        	funcD->SetParameters(parD);
+		        	double w = 1./(funcD->Eval(Zh*Nu, 0, 0));
 
 					dataD.push_back(Zh*Nu);    	// Unbinned KS
 		      		weightD.push_back(w);		// Weighted Unbinned
@@ -290,8 +319,8 @@ int main(int argc, char *argv[]){
 		        	double Xf_Nuclei = Calculate_Modified_Xf(energy_shift, Nu, P, Pt,  Q2,  W, Zh);
 		        	if(Xf_Nuclei>limit_xf){
 
-		          		//funcS->SetParameters(parS);
-		        		double w = 1.;//1./(funcS->Eval(Zh*Nu+energy_shift, 0, 0));  //weight for E value
+		          		funcS->SetParameters(parS);
+		        		double w = 1./(funcS->Eval(Zh*Nu+energy_shift, 0, 0));  //weight for E value
 
 		          		dataS.push_back((Zh*Nu)+energy_shift); 	 	 	// Unbinned KS
 		      			weightS.push_back(w);						// Weighted Unbinned
@@ -311,7 +340,17 @@ int main(int argc, char *argv[]){
 		    double pKSbinned = D->KolmogorovTest(histograms[shift], "D");
 		    //gpKSb->SetPoint(i, i, -1*TMath::Log10(pKSbinned));
 		    gpKSb->SetPoint(shift, shift, pKSbinned);
-
+/*
+		    //-----Accepted Corrected Binned Kolmogorov-Smirnov Test-----//
+		    TH1F *Acc = (TH1F*)acc->Get("accD"); // Getting the right acc histogram
+		    Acc->Scale(1.0/Acc->Integral());
+		    TH1F *Target = (TH1F*)acc->Get(Form("accNuclei_shift%d", shift));
+		    Target->Scale(1.0/Target->Integral());
+		    //double pCSbinned = D->Chi2Test(histograms[i], "NORM");
+		    double ApKSbinned = Acc->KolmogorovTest(Target, "D");
+		    //gpKSb->SetPoint(i, i, -1*TMath::Log10(pKSbinned));
+		    gpAKSb->SetPoint(shift, shift, ApKSbinned);
+*/
 		    //-----Binned Weighted KS Test-----//
 		    DW->Scale(1.0/DW->Integral());
 		    histogramsW[shift]->Scale(1.0/histogramsW[shift]->Integral());
@@ -404,11 +443,13 @@ int main(int argc, char *argv[]){
 		gpWKS->SetName(Form("pWKS_"+Nuclei_Type+"_nubin%d", Nu_bin));
 		gpKSb->SetName(Form("pKSb_"+Nuclei_Type+"_nubin%d", Nu_bin));
 		gpWKSb->SetName(Form("pWKSb_"+Nuclei_Type+"_nubin%d", Nu_bin));
+		//gpAKSb->SetName(Form("AccKSb_"+Nuclei_Type+"_nubin%d", Nu_bin));
 
 		gpKS->SetLineColor(4);   
 		gpWKS->SetLineColor(1);
 		gpKSb->SetLineColor(6); 
 		gpWKSb->SetLineColor(2);
+		//gpAKSb->SetLineColor(3);
 
 		gpKS->SetLineWidth(3);
 		gpWKS->SetLineWidth(3);
@@ -416,11 +457,13 @@ int main(int argc, char *argv[]){
 		gpKSb->SetLineWidth(3);
 		gpWKSb->SetLineWidth(3);
 		gpWKSb->SetLineStyle(9);
+		//gpAKSb->SetLineWidth(3);
 
 		gpKS->SetTitle("Unbinned KS");
 		gpWKS->SetTitle("Weighted Unbinned KS");
 		gpKSb->SetTitle("Binned KS");
 		gpWKSb->SetTitle("Weighted Binned KS");
+		//gpAKSb->SetTitle("Accepted Binned KS");
 
 		TCanvas *canvas = new TCanvas();
 		TMultiGraph *multi = new TMultiGraph();
@@ -428,6 +471,7 @@ int main(int argc, char *argv[]){
 		multi->Add(gpWKS,"L");
 		multi->Add(gpKSb,"L");
 		multi->Add(gpWKSb,"L");
+		//multi->Add(gpAKSb, "L");
 
 		multi->Draw("AL");
 		multi->SetMaximum(1.2);
@@ -437,8 +481,7 @@ int main(int argc, char *argv[]){
 		multi->GetYaxis()->SetTitle("p_{0}"); //"-Log(p_{0})"
 		
 		canvas->BuildLegend();
-		canvas->SaveAs(Form("output/SMCutsProb_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max*100), n, nbins));
-		canvas->Write();
+		canvas->SaveAs(Form("output/SMWeightProb_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max*100), n, nbins));
 	
 		//-----ELOSS HISTOGRAMS PLOTS-----//
 		
@@ -584,7 +627,7 @@ int main(int argc, char *argv[]){
 	   	legend->Draw();
 
 		//Chu->BuildLegend();
-		Chu->SaveAs(Form("output/SMEnergy_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max), n, nbins));
+		Chu->SaveAs(Form("output/SMWeightEnergy_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max), n, nbins));
 		
 
 		//DAcc->SetName(Form("Acc_Corr_D_%d", Nu_bin));
@@ -642,7 +685,7 @@ int main(int argc, char *argv[]){
 	multi->GetYaxis()->SetTitle("dE [MeV]"); 
 
 	canvas->BuildLegend();
-	canvas->SaveAs(Form("output/SMCutsEloss_"+Nuclei_Type+"_%dnubins_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, nentries, int(E_min), int(E_max), n, nbins));
+	canvas->SaveAs(Form("output/SMWeightEloss_"+Nuclei_Type+"_%dnubins_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, nentries, int(E_min), int(E_max), n, nbins));
 	//canvas->Write();
 
 	std::cout<<" ABOUT TO CLOSE " << std::endl;
