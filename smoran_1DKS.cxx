@@ -84,8 +84,8 @@ int main(int argc, char *argv[]){
 	cout<< "The cut on Xf is " << limit_xf << endl;
 
 	//------Opening data files-----//
-	TFile *file = new TFile(Form("/Users/gbibim/Documents/ElossAnalysis/chargedPions//" + Nuclei_Type + "_data.root"));
-	//TFile *file = new TFile(Form("/user/b/brooksw/bruno/" + Nuclei_Type + "_data.root"));
+	//TFile *file = new TFile(Form("/Users/gbibim/Documents/ElossAnalysis/chargedPions/" + Nuclei_Type + "_data.root"));
+	TFile *file = new TFile(Form("/user/b/brooksw/bruno/" + Nuclei_Type + "_data.root"));
 
 	//-----Opening TTree----//
 
@@ -182,7 +182,7 @@ int main(int argc, char *argv[]){
 		TF1 * funcS = (TF1*) gROOT->GetFunction(Form("chebyshev%d", n));
 		funcS->SetRange(E_min,E_max);
 
-		TFile *acc = new TFile(Form("output/last/SM1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins)); // Acceptance files
+		TFile *acc = new TFile(Form("output/SM1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins)); // Acceptance files
 
 		//-----Histograms with Energy distribution-----//
 		TH1F *D = new TH1F("D","D",nbins,E_min,E_max);
@@ -530,38 +530,7 @@ int main(int argc, char *argv[]){
 
 
 		//-----Energy spectra distributions-----//
-		/*
-		TCanvas *c1 = new TCanvas();
-		c1->SetTitle("Energy Distribution");
-	    histograms[i_KS]->Scale(1.0/histograms[i_KS]->Integral());
-	    histograms[0]->Scale(1.0/histograms[0]->Integral());
-	    D->Scale(1.0/D->Integral());
-	       
-	    histograms[i_KS]->SetLineColor(6);
-	    histograms[i_KS]->SetMarkerColor(6);
-	    histograms[i_KS]->SetMarkerSize(1);
-	    histograms[i_KS]->SetMarkerStyle(2);
-	    histograms[i_KS]->SetLineStyle(1);
-	    histograms[i_KS]->SetStats(0);
-	    histograms[0]->SetLineColor(2);
-	    histograms[0]->SetMarkerColor(2);
-	    histograms[0]->SetMarkerSize(1);
-	    histograms[0]->SetMarkerStyle(1);
-	    histograms[0]->SetStats(0);
-	    D->SetStats(0);
-	    D->SetName("Energy Distribution");
-	    D->Draw("Ehist");
-	    histograms[i_KS]->Draw("Esame");
-	    histograms[0]->Draw("Ehistsame");
-	    TLegend *legend = new TLegend(0.1,0.7,0.48,0.9);
-	  	//legend->SetHeader("The Legend Title","C"); // option "C" allows to center the header
-	  	legend->AddEntry(D,"Deuterium","l");
-	   	legend->AddEntry(histograms[0],"Carbon","l");
-	   	legend->AddEntry(histograms[i_KS],Form("Carbon shift %d", i_KS),"l");
-	   	legend->Draw();
-	    c1->BuildLegend();
-		c1->SaveAs(Form("ROOTW_PART%d_Spectrum_"+Nuclei_Type+"_nubin%d_%d_Ecut_%d.pdf", F, Nu_bin, nentries, int(E_max)));
-		*/
+
 		fout->cd();
 		for (int d = 0; d < nshift_E; ++d)
 		{
