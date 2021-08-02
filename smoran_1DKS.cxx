@@ -1,3 +1,5 @@
+
+  
 #define SMORAN 1
 
 
@@ -82,8 +84,8 @@ int main(int argc, char *argv[]){
 	cout<< "The cut on Xf is " << limit_xf << endl;
 
 	//------Opening data files-----//
-	//TFile *file = new TFile(Form("/Users/gbibim/Documents/ElossAnalysis/chargedPions//" + Nuclei_Type + "_data.root"));
-	TFile *file = new TFile(Form("/user/b/brooksw/bruno/" + Nuclei_Type + "_data.root"));
+	TFile *file = new TFile(Form("/Users/gbibim/Documents/ElossAnalysis/chargedPions//" + Nuclei_Type + "_data.root"));
+	//TFile *file = new TFile(Form("/user/b/brooksw/bruno/" + Nuclei_Type + "_data.root"));
 
 	//-----Opening TTree----//
 
@@ -129,11 +131,11 @@ int main(int argc, char *argv[]){
 	tree->SetBranchAddress("deltaZ",&deltaZ);
 	//tree->SetBranchAddress("NmbPion",&NmbPion);
 
-	Int_t nentries = tree->GetEntries();
-	//Int_t nentries = 1000000;
+	//Int_t nentries = tree->GetEntries();
+	Int_t nentries = 100000;
 
 	//-----Creating output file-----//	
-	TFile *fout = new TFile(Form("output/SKS1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
+	TFile *fout = new TFile(Form("output/OLD1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
 
 	//-----Creating the Graphs for the Eloss Shift Values------//
 	TGraph *gElossKS = new TGraph();  //  Graph for Eloss values for the KS test
@@ -151,7 +153,7 @@ int main(int argc, char *argv[]){
 	Double_t parD[n+1];
 	Double_t parS[n+1];
 
-	TFile *fileFit = new TFile(Form("output/SMFIT1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
+	TFile *fileFit = new TFile(Form("output/OLDFIT1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
 
 	//--------Starting Loop Over Nu bins---------//
 	for(Int_t Nu_bin = 0; Nu_bin < N_Nu; Nu_bin++){
@@ -180,14 +182,14 @@ int main(int argc, char *argv[]){
 		TF1 * funcS = (TF1*) gROOT->GetFunction(Form("chebyshev%d", n));
 		funcS->SetRange(E_min,E_max);
 
-		TFile *acc = new TFile(Form("output/SM1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins)); // Acceptance files
+		TFile *acc = new TFile(Form("output/last/SM1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins)); // Acceptance files
 
 		//-----Histograms with Energy distribution-----//
 		TH1F *D = new TH1F("D","D",nbins,E_min,E_max);
 		D->Sumw2();
 		std::map<int,TH1F*> histograms;
 		for(int i = 0; i<= nshift_E; i++){
-			histograms[i] = new TH1F(Form("Nuclei_bin%d",i),Form("Nuclei_bin%d",i),nbins,E_min,E_max);
+			histograms[i] = new TH1F(Form("Nuclei_shift%d_Nubin%d",i, Nu_bin),Form("Nuclei_bin%d_Nubin%d",i, Nu_bin),nbins,E_min,E_max);
 			histograms[i]->Sumw2();
 		}
 
@@ -196,7 +198,7 @@ int main(int argc, char *argv[]){
 		DW->Sumw2();
 		std::map<int,TH1F*> histogramsW;
 		for(int i = 0; i<= nshift_E; i++){
-			histogramsW[i] = new TH1F(Form("WNuclei_bin%d",i),Form("WNuclei_bin%d",i),nbins,E_min,E_max);
+			histogramsW[i] = new TH1F(Form("WNuclei_shift%d_Nubin%d",i, Nu_bin),Form("WNuclei_bin%d_Nubin%d",i, Nu_bin),nbins,E_min,E_max);
 			histogramsW[i]->Sumw2();
 		}
 
@@ -240,10 +242,7 @@ int main(int argc, char *argv[]){
 		//--------LOOP OVER THE SHIFTS---------//
 		cout << "Starting loop over Shifts" << endl;
 		for (int shift = 0; shift <= nshift_E; ++shift){ 
-			dataS.clear();
-		   	dataD.clear();
-		   	weightD.clear();
-		   	weightS.clear();
+
 
 
 			// Starting Loop over Q2 for Solid Target
@@ -364,17 +363,15 @@ int main(int argc, char *argv[]){
 	    	//--------Sorting vectors and filling energy Graphs-------//
 	    	int nD = dataD.size();
 	    	int nS = dataS.size();
-/*
+
  			vector<int> idxD(nD);
  			vector<int> idxS(nS);
-
  			int x=0, y=0;
  			std::iota(idxD.begin(), idxD.end(),x++); //Initializing
  			std::iota(idxS.begin(), idxS.end(),y++); //Initializing
-
  			sort(idxD.begin(), idxD.end(), [&](int i,int j){return dataD[i]<dataD[j];} );
  			sort(idxS.begin(), idxS.end(), [&](int i,int j){return dataS[i]<dataS[j];} );
-*/
+
 	    	sort(dataD.begin(), dataD.end());
 	    	sort(dataS.begin(), dataS.end());
 
@@ -396,10 +393,10 @@ int main(int argc, char *argv[]){
     		int j1 = 0;
     		int j2 = 0;
 		    for (int l = 0; l < nD+nS; ++l){
-		    	int a = j1; //idxD[j1];
-		    	int b = j2; //idxS[j2];
-		    	Double_t w1 = 1./w1sum; //weightD[a]/w1sum;
-		    	Double_t w2 = 1./w2sum; //weightS[b]/w2sum;
+		    	int a = idxD[j1];
+		    	int b = idxS[j2];
+		    	Double_t w1 = weightD[a]/w1sum;
+		    	Double_t w2 = weightS[b]/w2sum;
 
 				if (dataD[j1] < dataS[j2]) {
 				    rdiff -= w1;
@@ -433,7 +430,10 @@ int main(int argc, char *argv[]){
        			//gpKS->SetPoint(i, i, -1*TMath::Log10(pKS));
 		    	gpWKS->SetPoint(shift, shift, pWKS);
 		    }
-	
+			dataS.clear();
+		   	dataD.clear();
+		   	weightD.clear();
+		   	weightS.clear();
 	  	}//-------End of the Loop over shifts------//
 
 	  	std::cout<< "END LOOP OVER SHIFTS" << std::endl;
@@ -443,13 +443,11 @@ int main(int argc, char *argv[]){
 		gpWKS->SetName(Form("pWKS_"+Nuclei_Type+"_nubin%d", Nu_bin));
 		gpKSb->SetName(Form("pKSb_"+Nuclei_Type+"_nubin%d", Nu_bin));
 		gpWKSb->SetName(Form("pWKSb_"+Nuclei_Type+"_nubin%d", Nu_bin));
-		//gpAKSb->SetName(Form("AccKSb_"+Nuclei_Type+"_nubin%d", Nu_bin));
 
 		gpKS->SetLineColor(4);   
 		gpWKS->SetLineColor(1);
 		gpKSb->SetLineColor(6); 
 		gpWKSb->SetLineColor(2);
-		//gpAKSb->SetLineColor(3);
 
 		gpKS->SetLineWidth(3);
 		gpWKS->SetLineWidth(3);
@@ -457,13 +455,17 @@ int main(int argc, char *argv[]){
 		gpKSb->SetLineWidth(3);
 		gpWKSb->SetLineWidth(3);
 		gpWKSb->SetLineStyle(9);
-		//gpAKSb->SetLineWidth(3);
 
 		gpKS->SetTitle("Unbinned KS");
 		gpWKS->SetTitle("Weighted Unbinned KS");
 		gpKSb->SetTitle("Binned KS");
 		gpWKSb->SetTitle("Weighted Binned KS");
-		//gpAKSb->SetTitle("Accepted Binned KS");
+
+		fout->cd();
+		gpKS->Write();
+		gpWKS->Write();
+		gpKSb->Write();
+		gpWKSb->Write();
 
 		TCanvas *canvas = new TCanvas();
 		TMultiGraph *multi = new TMultiGraph();
@@ -471,7 +473,6 @@ int main(int argc, char *argv[]){
 		multi->Add(gpWKS,"L");
 		multi->Add(gpKSb,"L");
 		multi->Add(gpWKSb,"L");
-		//multi->Add(gpAKSb, "L");
 
 		multi->Draw("AL");
 		multi->SetMaximum(1.2);
@@ -481,7 +482,7 @@ int main(int argc, char *argv[]){
 		multi->GetYaxis()->SetTitle("p_{0}"); //"-Log(p_{0})"
 		
 		canvas->BuildLegend();
-		canvas->SaveAs(Form("output/SMWeightProb_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max*100), n, nbins));
+		canvas->SaveAs(Form("output/OLDProb_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max*100), n, nbins));
 	
 		//-----ELOSS HISTOGRAMS PLOTS-----//
 		
@@ -542,19 +543,16 @@ int main(int argc, char *argv[]){
 	    histograms[i_KS]->SetMarkerStyle(2);
 	    histograms[i_KS]->SetLineStyle(1);
 	    histograms[i_KS]->SetStats(0);
-
 	    histograms[0]->SetLineColor(2);
 	    histograms[0]->SetMarkerColor(2);
 	    histograms[0]->SetMarkerSize(1);
 	    histograms[0]->SetMarkerStyle(1);
 	    histograms[0]->SetStats(0);
-
 	    D->SetStats(0);
 	    D->SetName("Energy Distribution");
 	    D->Draw("Ehist");
 	    histograms[i_KS]->Draw("Esame");
 	    histograms[0]->Draw("Ehistsame");
-
 	    TLegend *legend = new TLegend(0.1,0.7,0.48,0.9);
 	  	//legend->SetHeader("The Legend Title","C"); // option "C" allows to center the header
 	  	legend->AddEntry(D,"Deuterium","l");
@@ -565,15 +563,21 @@ int main(int argc, char *argv[]){
 		c1->SaveAs(Form("ROOTW_PART%d_Spectrum_"+Nuclei_Type+"_nubin%d_%d_Ecut_%d.pdf", F, Nu_bin, nentries, int(E_max)));
 		*/
 		fout->cd();
+		for (int d = 0; d < nshift_E; ++d)
+		{
+			histograms[d]->Write();
+			histogramsW[d]->Write();
+		}
 
 		TCanvas *Chu = new TCanvas();
 
 		D->SetName(Form("D_%d", Nu_bin));
 		D->SetTitle(Form("Energy for Target "+Nuclei_Type+" Nu bin %d", Nu_bin));
 		D->SetLineColor(9);
+		D->Draw("HIST L P");
 		//D->SetMarkerColor(9);
 		//D->SetMarkerStyle(33);
-		D->Write("HIST L P");
+		D->Write();
 
 		histograms[i_KS]->SetName(Form("KS_%d", Nu_bin));
 		TH1F *KS = (TH1F*) histograms[i_KS]->Clone();
@@ -610,9 +614,15 @@ int main(int argc, char *argv[]){
 		WKSb->SetMarkerStyle(23);
 		WKSb->Draw("HIST same L P");
 
+		fout->cd();
 
 		DW->SetName(Form("Weighted_D_%d", Nu_bin));
 		DW->Write();
+		D->Write();
+		KS->Write();
+		KSb->Write();
+		WKS->Write();
+		WKSb->Write();
 
 		auto legend = new TLegend(0.3, 0.1, .5, .3, Form(Nuclei_Type+" Target, Nu bin %d", Nu_bin), "brNDC");
 	 
@@ -627,7 +637,7 @@ int main(int argc, char *argv[]){
 	   	legend->Draw();
 
 		//Chu->BuildLegend();
-		Chu->SaveAs(Form("output/SMWeightEnergy_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max), n, nbins));
+		Chu->SaveAs(Form("output/OLDEnergy_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max), n, nbins));
 		
 
 		//DAcc->SetName(Form("Acc_Corr_D_%d", Nu_bin));
@@ -649,11 +659,6 @@ int main(int argc, char *argv[]){
 	gElossKSb->SetName(Form("ElossKSb_"+Nuclei_Type));
 	gElossWKSb->SetName(Form("ElossWKS_"+Nuclei_Type));
 
-	gElossKS->Write();
-	gElossWKS->Write();
-	gElossKSb->Write();
-	gElossWKSb->Write();
-
 	gElossKS->SetMarkerColor(4);    
 	gElossWKS->SetMarkerColor(1);
 	gElossKSb->SetMarkerColor(6);   
@@ -668,6 +673,11 @@ int main(int argc, char *argv[]){
 	gElossWKS->SetTitle("Weighted Unbinned KS");
 	gElossKSb->SetTitle("Binned KS");
 	gElossWKSb->SetTitle("Weighted Binned KS");
+
+	gElossKS->Write();
+	gElossWKS->Write();
+	gElossKSb->Write();
+	gElossWKSb->Write();
 
 	TCanvas *canvas = new TCanvas();
 	TMultiGraph *multi = new TMultiGraph();
@@ -685,11 +695,13 @@ int main(int argc, char *argv[]){
 	multi->GetYaxis()->SetTitle("dE [MeV]"); 
 
 	canvas->BuildLegend();
-	canvas->SaveAs(Form("output/SMWeightEloss_"+Nuclei_Type+"_%dnubins_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, nentries, int(E_min), int(E_max), n, nbins));
+	canvas->SaveAs(Form("output/OLDEloss_"+Nuclei_Type+"_%dnubins_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, nentries, int(E_min), int(E_max), n, nbins));
 	//canvas->Write();
 
 	std::cout<<" ABOUT TO CLOSE " << std::endl;
+
 	fout->Close();
+	file->Close();
 	std::cout<< " BYE BYE " << std::endl;
-	return 1;
+	return 0;
 }
