@@ -338,7 +338,7 @@ int main(int argc, char *argv[]){
 		    //double pCSbinned = D->Chi2Test(histograms[i], "NORM");
 		    double pKSbinned = D->KolmogorovTest(histograms[shift], "D");
 		    //gpKSb->SetPoint(i, i, -1*TMath::Log10(pKSbinned));
-		    gpKSb->SetPoint(shift, shift, pKSbinned);
+		    gpKSb->SetPoint(shift, energy_shift, pKSbinned);
 /*
 		    //-----Accepted Corrected Binned Kolmogorov-Smirnov Test-----//
 		    TH1F *Acc = (TH1F*)acc->Get("accD"); // Getting the right acc histogram
@@ -355,7 +355,7 @@ int main(int argc, char *argv[]){
 		    histogramsW[shift]->Scale(1.0/histogramsW[shift]->Integral());
 		    double pWKSbinned = DW->KolmogorovTest(histogramsW[shift], "D");
 		    //gWpKSb->SetPoint(i, i, -1*TMath::Log10(WpKSbinned));
-		    gpWKSb->SetPoint(shift, shift, pWKSbinned);	
+		    gpWKSb->SetPoint(shift, energy_shift, pWKSbinned);	
 
 
 		    //--------Unbinned Tests--------//
@@ -378,7 +378,7 @@ int main(int argc, char *argv[]){
 		    //----------UNBINNED KOLMOGOROV TEST----------//
 		    double pKS = TMath::KolmogorovTest(nD, &dataD[0], nS, &dataS[0], "D");
 		    //gpKS->SetPoint(i, i, -1*TMath::Log10(pKS));
-		    gpKS->SetPoint(shift, shift, pKS);
+		    gpKS->SetPoint(shift, energy_shift, pKS);
 
 
 		    //Double_t w1sum = std::accumulate(weightD.begin(), weightD.end(), 0);
@@ -428,7 +428,7 @@ int main(int argc, char *argv[]){
 		    	Double_t z = rdmax * TMath::Sqrt(nD*nS/(nD+nS));
        			double pWKS = TMath::KolmogorovProb(z);
        			//gpKS->SetPoint(i, i, -1*TMath::Log10(pKS));
-		    	gpWKS->SetPoint(shift, shift, pWKS);
+		    	gpWKS->SetPoint(shift, energy_shift, pWKS);
 		    }
 			dataS.clear();
 		   	dataD.clear();
