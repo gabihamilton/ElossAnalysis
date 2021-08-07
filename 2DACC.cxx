@@ -322,7 +322,7 @@ int main(int argc, char **argv){
 	  acceptance_histo->Divide(reconstructed_histo,thrown_histo,1,1,"B");
 	  // Saving ACC histograms to file
 	  TH1F *hDA = (TH1F*) acceptance_histo->Clone();
-	  hDA->SetName(Form("acc_D_nubin%d_q2bin", Nu_bin, j));
+	  hDA->SetName(Form("acc_D_nubin%d_q2bin%d", Nu_bin, j));
 	  hDA->Write();
 	  
 	  TH1F *acceptance_correction_histo = new TH1F("acceptance_correction_histo","",nbins,E_min,E_max);
