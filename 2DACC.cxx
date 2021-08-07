@@ -254,43 +254,43 @@ int main(int argc, char **argv){
 	thrown_S->SetBranchStatus("Xf",1);
 	thrown_S->SetBranchStatus("Zh",1);
 	thrown_S->SetBranchStatus("P",1);
-	  #ifdef SMORAN
-	    thrown_S->SetBranchStatus("Pt2",1);
-	  #else
-	    thrown_D->SetBranchStatus("W",1);
-	    //thrown_S->SetBranchStatus("TargType",1);
-	    thrown_S->SetBranchStatus("Pt",1);
-	  #endif
+	#ifdef SMORAN
+	  thrown_S->SetBranchStatus("Pt2",1);
+	#else
+	  thrown_D->SetBranchStatus("W",1);
+	  //thrown_S->SetBranchStatus("TargType",1);
+	  thrown_S->SetBranchStatus("Pt",1);
+	#endif
 
-	  thrown_S->Draw(">>list_thrS",cuts_simulS,"goff");
-	  thrown_S->SetEventList((TEventList*)gDirectory->Get("list_thrS"));
-
-
-	  //  CREATING THE OUTPUT FILE
-	  #ifdef SMORAN
-	    TFile *plots = new TFile(Form("output/SM1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
-	  #else
-	    TFile *plots = new TFile(Form("output/HH1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
-	  #endif
-
-	  //--------CREATING HISTOGRAMS--------//
-
-	  TH1F *D = new TH1F("D", "D", nbins, E_min, E_max);           // Deuterium DATA
-	  TH1F *accD = new TH1F("accD", "accD", nbins, E_min, E_max);  // Deuterium Acceptance
-
-	  std::map<int,TH1F*> histograms, acceptances;
-	  for(int i = shift_min; i<=shift_max; i++){
-	    histograms[i] = new TH1F(Form("Nuclei_shift%d",i),Form("Nuclei_shift%d",i),nbins,E_min,E_max);
-	    histograms[i]->Sumw2();
-	    acceptances[i] = new TH1F(Form("accNuclei_shift%d",i), Form("accNuclei_shift%d",i), nbins, E_min, E_max);
-	    acceptances[i]->Sumw2();
-	  }
+	thrown_S->Draw(">>list_thrS",cuts_simulS,"goff");
+	thrown_S->SetEventList((TEventList*)gDirectory->Get("list_thrS"));
 
 
+	//  CREATING THE OUTPUT FILE
+	#ifdef SMORAN
+	  TFile *plots = new TFile(Form("output/SM2Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
+	#else
+	  TFile *plots = new TFile(Form("output/HH2Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
+	#endif
 
-	  //------------ACCEPTANCE CORRECTION------------//
+	//--------CREATING HISTOGRAMS--------//
 
-	  Nu_cut = Form("Nu>%f && Nu<%f", Nu_min, Nu_max);  //  Cut for Nu bin
+	TH1F *D = new TH1F("D", "D", nbins, E_min, E_max);           // Deuterium DATA
+	TH1F *accD = new TH1F("accD", "accD", nbins, E_min, E_max);  // Deuterium Acceptance
+
+	std::map<int,TH1F*> histograms, acceptances;
+	for(int i = shift_min; i<=shift_max; i++){
+	  histograms[i] = new TH1F(Form("Nuclei_shift%d",i),Form("Nuclei_shift%d",i),nbins,E_min,E_max);
+	  histograms[i]->Sumw2();
+	  acceptances[i] = new TH1F(Form("accNuclei_shift%d",i), Form("accNuclei_shift%d",i), nbins, E_min, E_max);
+	  acceptances[i]->Sumw2();
+	}
+
+
+
+	//------------ACCEPTANCE CORRECTION------------//
+
+	Nu_cut = Form("Nu>%f && Nu<%f", Nu_min, Nu_max);  //  Cut for Nu bin
 
   	for (int j = 0; j < N_Q2; j++){
 
