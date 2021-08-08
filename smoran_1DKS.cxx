@@ -54,6 +54,7 @@ const double limit_xf = 0.1;		// xF cut
 const int nshift_E = 99;			// Number of shifts in Energy
 const double step_E = 2.5/1000.0;	// Size of Shifts in Energy
 //const int nbins = 100;				// Number of Energy bins
+const double zcut = 0.7;
 
 TString Nuclei_Type;
 Double_t energy_shift;
@@ -131,11 +132,11 @@ int main(int argc, char *argv[]){
 	tree->SetBranchAddress("deltaZ",&deltaZ);
 	//tree->SetBranchAddress("NmbPion",&NmbPion);
 
-	Int_t nentries = tree->GetEntries();
+	//Int_t nentries = tree->GetEntries();
 	//Int_t nentries = 100000;
 
 	//-----Creating output file-----//	
-	TFile *fout = new TFile(Form("output/OLD1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
+	TFile *fout = new TFile(Form("output/Z1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
 
 	//-----Creating the Graphs for the Eloss Shift Values------//
 	TGraph *gElossKS = new TGraph();  //  Graph for Eloss values for the KS test
@@ -298,7 +299,7 @@ int main(int argc, char *argv[]){
 		      	//if ( (T4>0.45 && P>3.3) || (T4>0.5 && P<3.3)) continue;
 
 		    	// Deuterium
-		      	if(TargType==1 && Xf>limit_xf && Zh*Nu<E_max && Zh*Nu>E_min){
+		      	if(TargType==1 && Xf>limit_xf && Zh*Nu<E_max && Zh*Nu>E_min && Zh<zcut){
 
 		        	funcD->SetParameters(parD);
 		        	double w = 1./(funcD->Eval(Zh*Nu, 0, 0));
@@ -482,7 +483,8 @@ int main(int argc, char *argv[]){
 		multi->GetYaxis()->SetTitle("p_{0}"); //"-Log(p_{0})"
 		
 		canvas->BuildLegend();
-		canvas->SaveAs(Form("output/OLDProb_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max*100), n, nbins));
+		canvas->SaveAs(Form("output/ZProb_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max*100), n, nbins));
+		canvas->SaveAs(Form("output/ZProb_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.C", N_Nu, Nu_bin, nentries, int(E_min), int(E_max*100), n, nbins));
 	
 		//-----ELOSS HISTOGRAMS PLOTS-----//
 		
@@ -606,7 +608,8 @@ int main(int argc, char *argv[]){
 	   	legend->Draw();
 
 		//Chu->BuildLegend();
-		Chu->SaveAs(Form("output/OLDEnergy_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max), n, nbins));
+		Chu->SaveAs(Form("output/ZEnergy_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max), n, nbins));
+		Chu->SaveAs(Form("output/ZEnergy_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.C", N_Nu, Nu_bin, nentries, int(E_min), int(E_max), n, nbins));
 		
 
 		//DAcc->SetName(Form("Acc_Corr_D_%d", Nu_bin));
@@ -664,7 +667,8 @@ int main(int argc, char *argv[]){
 	multi->GetYaxis()->SetTitle("dE [MeV]"); 
 
 	canvas->BuildLegend();
-	canvas->SaveAs(Form("output/OLDEloss_"+Nuclei_Type+"_%dnubins_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, nentries, int(E_min), int(E_max), n, nbins));
+	canvas->SaveAs(Form("output/ZEloss_"+Nuclei_Type+"_%dnubins_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, nentries, int(E_min), int(E_max), n, nbins));
+	canvas->SaveAs(Form("output/ZEloss_"+Nuclei_Type+"_%dnubins_%dentries_%dEcut%d_cheb%d_Ebins%d.C", N_Nu, nentries, int(E_min), int(E_max), n, nbins));
 	//canvas->Write();
 
 	std::cout<<" ABOUT TO CLOSE " << std::endl;
