@@ -91,9 +91,12 @@ int main(int argc, char **argv){
 	Nu_bin = atoi(argv[3]);           // Nu bin Index
 	Int_t nbins = atoi(argv[4]);
 
-	  
-	Double_t Nu_min = 3.2 + Nu_bin*0.1;
-	Double_t Nu_max = Nu_min + 0.1;
+	Double_t Max = 4.2;
+	Double_t Min = 3.2;
+	Double_t inc = (Max-Min)N_Nu;
+
+	Double_t Nu_min = Min + Nu_bin*inc;
+	Double_t Nu_max = Nu_min + inc;
 
 	Bundle = 0;//(Int_t) std::stoi(argv[4]); // in number of bundle
 	bundle_size = 100;//(Int_t) std::stoi(argv[5]);
