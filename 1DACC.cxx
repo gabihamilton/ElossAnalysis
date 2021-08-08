@@ -94,7 +94,7 @@ int main(int argc, char **argv)
 
   Double_t Max = 4.2;
   Double_t Min = 3.2;
-  Double_t inc = (Max-Min)N_Nu;
+  Double_t inc = (Max-Min)*N_Nu;
 
   Double_t Nu_min = Min + Nu_bin*inc;
   Double_t Nu_max = Nu_min + inc;
