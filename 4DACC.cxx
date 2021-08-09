@@ -54,8 +54,8 @@ const Double_t E_min = 0.;
 const Double_t E_max = 2.5;  
 
 const double limit_xf = 0.1;         // Cut in xF
-const int nshift_E = 50;             // total number of shifts in Energy
-const double step_E = 2.5/1000.0;    // size of energy shift
+const int nshift_E = 99;             // total number of shifts in Energy
+const double step_E = 1.0/1000.0;    // size of energy shift
 //const Int_t nbins = 100;             // number of energy bins
 
 const Int_t nSimuFiles = 4;
@@ -271,9 +271,9 @@ int main(int argc, char **argv){
 
 	//  CREATING THE OUTPUT FILE
 	#ifdef SMORAN
-	  TFile *plots = new TFile(Form("output/SM4Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
+	  TFile *plots = new TFile(Form("output/SM4Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d_step%f.root", N_Nu, Nu_bin, nbins, step_E*1000),"RECREATE");
 	#else
-	  TFile *plots = new TFile(Form("output/HH2Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
+	  TFile *plots = new TFile(Form("output/HH2Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d_step%f.root", N_Nu, Nu_bin, nbins, step_E*1000),"RECREATE");
 	#endif
 
 	//--------CREATING HISTOGRAMS--------//
