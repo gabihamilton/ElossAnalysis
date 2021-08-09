@@ -54,7 +54,7 @@ using namespace std;
 const double E_max = 2.0; 			// Minimum Energy
 const double E_min = 0.5;  			// Maximum Energy
 const double limit_xf = 0.1;		// xF cut
-const int nshift_E = 100;			// Number of shifts in Energy
+const int nshift_E = 99;			// Number of shifts in Energy
 const double step_E = 1.0/1000.0;	// Size of Shifts in Energy
 //const int nbins = 100;				// Number of Energy bins
 const double zcut = 0.7;
@@ -169,7 +169,7 @@ int main(int argc, char *argv[]){
 	//Int_t nentries = 100000;
 
 	//-----Creating output file-----//	
-	TFile *fout = new TFile(Form("KS/Z1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
+	TFile *fout = new TFile(Form("KS/Z1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d_step%f.root", N_Nu, n, nbins, step*1000), "RECREATE");
 
 	//-----Creating the Graphs for the Eloss Shift Values------//
 	TGraphErrors *gElossKS = new TGraphErrors();  //  Graph for Eloss values for the KS test
@@ -427,8 +427,8 @@ int main(int argc, char *argv[]){
 		multi->GetYaxis()->SetTitle("p_{0}"); //"-Log(p_{0})"
 		
 		canvas->BuildLegend();
-		canvas->SaveAs(Form("KS/Z1DProb_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, n, nbins));
-		canvas->SaveAs(Form("KS/Z1DProb_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.C", N_Nu, Nu_bin, nentries, n, nbins));
+		canvas->SaveAs(Form("KS/Z1DProb_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d_step%f.pdf", N_Nu, Nu_bin, nentries, n, nbins, step_E*1000));
+		canvas->SaveAs(Form("KS/Z1DProb_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d_step%f.C", N_Nu, Nu_bin, nentries, n, nbins, step_E*1000));
 	
 
 
@@ -521,8 +521,8 @@ int main(int argc, char *argv[]){
 		KS->Draw("C");
 		D->Draw("Csame");
 		//C1->BuildLegend();
-		C1->SaveAs(Form("KS/Z1D_KSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, n, nbins));
-		C1->SaveAs(Form("KS/Z1D_KSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.C", N_Nu, Nu_bin, nentries, n, nbins));
+		C1->SaveAs(Form("KS/Z1D_KSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d_step%f.pdf", N_Nu, Nu_bin, nentries, n, nbins, step_E*1000));
+		C1->SaveAs(Form("KS/Z1D_KSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d_step%f.C", N_Nu, Nu_bin, nentries, n, nbins, step_E*1000));
 
 		TCanvas *C2 = new TCanvas();
 		KSb->SetLineColor(2);
@@ -534,8 +534,8 @@ int main(int argc, char *argv[]){
 		KSb->Draw("C");
 		D->Draw("Csame");
 		//C2->BuildLegend();
-		C2->SaveAs(Form("KS/Z1D_KSbMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, n, nbins));
-		C2->SaveAs(Form("KS/Z1D_KSbMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.C", N_Nu, Nu_bin, nentries, n, nbins));
+		C2->SaveAs(Form("KS/Z1D_KSbMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d_step%f.pdf", N_Nu, Nu_bin, nentries, n, nbins, step_E*1000));
+		C2->SaveAs(Form("KS/Z1D_KSbMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d_step%f.C", N_Nu, Nu_bin, nentries, n, nbins, step_E*1000));
 
 		TCanvas *C3 = new TCanvas();
 		WKS->SetLineColor(2);
@@ -547,8 +547,8 @@ int main(int argc, char *argv[]){
 		WKS->Draw("C");
 		DW->Draw("Csame");
 		//C3->BuildLegend();
-		C3->SaveAs(Form("KS/Z1D_WKSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, n, nbins));
-		C3->SaveAs(Form("KS/Z1D_WKSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.C", N_Nu, Nu_bin, nentries, n, nbins));
+		C3->SaveAs(Form("KS/Z1D_WKSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d_step%f.pdf", N_Nu, Nu_bin, nentries, n, nbins, step_E*1000));
+		C3->SaveAs(Form("KS/Z1D_WKSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d_step%f.C", N_Nu, Nu_bin, nentries, n, nbins, step_E*1000));
 
 		TCanvas *C4 = new TCanvas();
 		WKSb->SetLineColor(2);
@@ -560,8 +560,8 @@ int main(int argc, char *argv[]){
 		WKSb->Draw("C");
 		DW->Draw("Csame");
 		C4->BuildLegend();
-		C4->SaveAs(Form("KS/Z1D_WKSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, n, nbins));
-		C4->SaveAs(Form("KS/Z1D_WKSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.C", N_Nu, Nu_bin, nentries, n, nbins));
+		C4->SaveAs(Form("KS/Z1D_WKSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d_step%f.pdf", N_Nu, Nu_bin, nentries, n, nbins, step_E*1000));
+		C4->SaveAs(Form("KS/Z1D_WKSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d_step%f.C", N_Nu, Nu_bin, nentries, n, nbins, step_E*1000));
 
 		fout->cd();
 
@@ -670,8 +670,8 @@ int main(int argc, char *argv[]){
 	multi->GetYaxis()->SetTitle("dE [MeV]"); 
 
 	canvas->BuildLegend();
-	canvas->SaveAs(Form("KS/Z1DEloss_"+Nuclei_Type+"_%dnubins_%dentries_cheb%d_Ebins%d.pdf", N_Nu, nentries, n, nbins));
-	canvas->SaveAs(Form("KS/Z1DEloss_"+Nuclei_Type+"_%dnubins_%dentries_cheb%d_Ebins%d.C", N_Nu, nentries, n, nbins));
+	canvas->SaveAs(Form("KS/Z1DEloss_"+Nuclei_Type+"_%dnubins_%dentries_cheb%d_Ebins%d_step%f.pdf", N_Nu, nentries, n, nbins, step_E*1000));
+	canvas->SaveAs(Form("KS/Z1DEloss_"+Nuclei_Type+"_%dnubins_%dentries_cheb%d_Ebins%d_step%f.C", N_Nu, nentries, n, nbins, step_E*1000));
 	//canvas->Write();
 
 	std::cout<<" ABOUT TO CLOSE " << std::endl;

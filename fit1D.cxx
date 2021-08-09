@@ -52,7 +52,7 @@ const double E_max = 2.0; 			// Minimum Energy
 const double E_min = 0.5;  			// Maximum Energy
 const double limit_xf = 0.1;		// xF cut
 const int nshift_E = 99;			// Number of shifts in Energy
-const double step_E = 2.5/1000.0;	// Size of Shifts in Energy
+const double step_E = 1.0/1000.0;	// Size of Shifts in Energy
 //const int nbins = 100;				// Number of Energy bins
 const double zcut = 0.7;
 
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]){
 	Double_t parD[n+1];
 	Double_t parS[n+1];
 
-	TFile *fileFit = new TFile(Form("fits/FIT1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
+	TFile *fileFit = new TFile(Form("fits/FIT1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d_step%f.root", N_Nu, n, nbins, step_E*1000), "RECREATE");
 
 	//--------Starting Loop Over Nu bins---------//
 	for(Int_t Nu_bin = 0; Nu_bin < N_Nu; Nu_bin++){
