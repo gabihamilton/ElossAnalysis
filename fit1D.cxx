@@ -51,8 +51,8 @@ using namespace std;
 const double E_max = 2.0; 			// Minimum Energy
 const double E_min = 0.5;  			// Maximum Energy
 const double limit_xf = 0.1;		// xF cut
-const int nshift_E = 99;			// Number of shifts in Energy
-const double step_E = 1.0/1000.0;	// Size of Shifts in Energy
+const int nshift_E = 49;			// Number of shifts in Energy
+const double step_E = 2.5/1000.0;	// Size of Shifts in Energy
 //const int nbins = 100;				// Number of Energy bins
 const double zcut = 0.7;
 
