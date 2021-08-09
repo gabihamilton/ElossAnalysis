@@ -90,8 +90,8 @@ void get_values(TGraph* graph, double& mean, double& sigma)
         line_mean->Draw();
         TLine* line_sigma_lo = new TLine(mean - sigma, 0, mean - sigma, graph->GetHistogram()->GetMaximum());
         TLine* line_sigma_up = new TLine(mean + sigma, 0, mean + sigma, graph->GetHistogram()->GetMaximum());
-        line_sigma_lo->SetLineColor(kRed);
-        line_sigma_up->SetLineColor(kRed);
+        line_sigma_lo->SetLineColor(kBlue);
+        line_sigma_up->SetLineColor(kBlue);
         line_sigma_lo->Draw();
         line_sigma_up->Draw();
         c->SaveAs(Form("plot_qa__%s.png", graph->GetName())); 
@@ -107,7 +107,7 @@ int main(int argc, char *argv[]){
 
 	double binQ2[N_Q2+1];
 	double delta_Q2 = (Q2_max-Q2_min)/N_Q2;
-	for (int h = 0; h < N_Q2; ++h){
+	for (int h = 0; h < N_Q2+1; ++h){
 		binQ2[h]= Q2_min + h*delta_Q2;
 	}
 
@@ -244,6 +244,7 @@ int main(int argc, char *argv[]){
 		      	{
 		      		if (Q2>binQ2[h] && Q2<binQ2[h+1]) Q2_bin = h;
 		      	}
+		      	if(Q2 >binQ2[5] || Q2 < binQ2[0]) continue;
 		      
 
 		      	//if ( (T4>0.45 && P>3.3) || (T4>0.5 && P<3.3)) continue;
