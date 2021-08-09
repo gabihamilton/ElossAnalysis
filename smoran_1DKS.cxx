@@ -202,7 +202,7 @@ int main(int argc, char *argv[]){
 		TGraph *gpAKSb = new TGraph();      // Graph for the Accepted Binned KS Test
  
 		//----Opening Fit file----//
-		TFile *fit = new TFile(Form("fits/FIT1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d_step%f.root", N_Nu, n, nbins, step_E)); // Acceptance files
+		TFile *fit = new TFile(Form("fits/FIT1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d_step%f.root", N_Nu, n, nbins, step_E*1000)); // Acceptance files
 
 
 		//-----Histograms with Energy distribution-----//
