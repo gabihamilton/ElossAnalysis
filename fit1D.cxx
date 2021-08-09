@@ -90,7 +90,7 @@ int main(int argc, char *argv[]){
 
 		cout << "Nu interval studied : " << Nu_min << " - " << Nu_max << endl;
 
-		TFile *acc = new TFile(Form("acc/SM1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins)); // Acceptance files
+		TFile *acc = new TFile(Form("acc/1mev/SM1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins)); // Acceptance files
 		
 	  	// Fitting Functions
 		TF1 * funcD = (TF1*) gROOT->GetFunction(Form("chebyshev%d", n));
