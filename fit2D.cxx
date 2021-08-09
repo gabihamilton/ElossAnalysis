@@ -91,7 +91,7 @@ int main(int argc, char *argv[]){
 
 		cout << "Nu interval studied : " << Nu_min << " - " << Nu_max << endl;
 
-		TFile *acc = new TFile(Form("acc/1mev/SM2Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins)); // Acceptance files
+		TFile *acc = new TFile(Form("acc/SM2Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d_step%f.root", N_Nu, Nu_bin, nbins, step_E*1000)); // Acceptance files
 
 		for (int Q2_bin = 0; Q2_bin < N_Q2; Q2_bin++){
 
