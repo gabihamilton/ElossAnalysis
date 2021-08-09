@@ -98,10 +98,10 @@ int main(int argc, char **argv){
 	Double_t Nu_min = Min + Nu_bin*inc;
 	Double_t Nu_max = Nu_min + inc;
 
-	Bundle = 0;//(Int_t) std::stoi(argv[4]); // in number of bundle
-	bundle_size = 100;//(Int_t) std::stoi(argv[5]);
-	int shift_min = Bundle*bundle_size;
-	int shift_max = Bundle*bundle_size + bundle_size - 1;
+	//Bundle = 0;//(Int_t) std::stoi(argv[4]); // in number of bundle
+	//bundle_size = 100;//(Int_t) std::stoi(argv[5]);
+	int shift_min = 0; Bundle*bundle_size;
+	int shift_max = nshift_E; Bundle*bundle_size + bundle_size - 1;
 	  
 	delta_Q2 = (Q2_max-Q2_min)/N_Q2;
 	delta_Phi = (Phi_max-Phi_min)/N_Phi;
@@ -271,9 +271,9 @@ int main(int argc, char **argv){
 
 	//  CREATING THE OUTPUT FILE
 	#ifdef SMORAN
-	  TFile *plots = new TFile(Form("acc/SM2Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
+	  TFile *plots = new TFile(Form("acc/SM2Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d_step%f.root", N_Nu, Nu_bin, nbins, step_E),"RECREATE");
 	#else
-	  TFile *plots = new TFile(Form("acc/HH2Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
+	  TFile *plots = new TFile(Form("acc/HH2Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d_step%f.root", N_Nu, Nu_bin, nbins, step_E),"RECREATE");
 	#endif
 
 	//--------CREATING HISTOGRAMS--------//

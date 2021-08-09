@@ -54,8 +54,8 @@ const Double_t E_min = 0.;
 const Double_t E_max = 2.5;  
 
 const double limit_xf = 0.1;         // Cut in xF
-const int nshift_E = 99;             // total number of shifts in Energy
-const double step_E = 1.0/1000.0;    // size of energy shift
+const int nshift_E = 49;             // total number of shifts in Energy
+const double step_E = 2.5/1000.0;    // size of energy shift
 //const Int_t nbins = 100;             // number of energy bins
 
 const Int_t nSimuFiles = 4;
@@ -99,10 +99,10 @@ int main(int argc, char **argv)
   Double_t Nu_min = Min + Nu_bin*inc;
   Double_t Nu_max = Nu_min + inc;
 
-  Bundle = 0;//(Int_t) std::stoi(argv[4]); // in number of bundle
-  bundle_size = 100;//(Int_t) std::stoi(argv[5]);
-  int shift_min = Bundle*bundle_size;
-  int shift_max = Bundle*bundle_size + bundle_size - 1;
+  //Bundle = 0;//(Int_t) std::stoi(argv[4]); // in number of bundle
+  //bundle_size = 100;//(Int_t) std::stoi(argv[5]);
+  int shift_min = 0; //Bundle*bundle_size;
+  int shift_max = nshift_E; //Bundle*bundle_size + bundle_size - 1;
   
   delta_Q2 = (Q2_max-Q2_min)/N_Q2;
   delta_Phi = (Phi_max-Phi_min)/N_Phi;
