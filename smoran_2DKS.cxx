@@ -104,7 +104,6 @@ int main(int argc, char *argv[]){
   	Int_t N_Nu = atoi(argv[2]);
   	Int_t nbins = atoi(argv[3]);
   	Int_t n = atoi(argv[4]);  // ORDER OF THE CHEBYSHEV FUNC
-  	Int_t Nu_bin = atoi(argv[5]);
 
 	double binQ2[N_Q2+1];
 	double delta_Q2 = (Q2_max-Q2_min)/N_Q2;
