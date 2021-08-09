@@ -271,9 +271,9 @@ int main(int argc, char **argv){
 
 	//  CREATING THE OUTPUT FILE
 	#ifdef SMORAN
-	  TFile *plots = new TFile(Form("output/SM2Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
+	  TFile *plots = new TFile(Form("acc/SM2Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
 	#else
-	  TFile *plots = new TFile(Form("output/HH2Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
+	  TFile *plots = new TFile(Form("acc/HH2Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
 	#endif
 
 	//--------CREATING HISTOGRAMS--------//
@@ -297,59 +297,59 @@ int main(int argc, char **argv){
 
   	for (int j = 0; j < N_Q2; j++){
 
-	  Q2_cut = Form("Q2>%f && Q2<%f", Q2_min + j*delta_Q2 , Q2_min + (j+1)*delta_Q2);  //  Cut for Q2 bin			
+	  	Q2_cut = Form("Q2>%f && Q2<%f", Q2_min + j*delta_Q2 , Q2_min + (j+1)*delta_Q2);  //  Cut for Q2 bin			
 
-	  //----ACCEPTANCE FOR DEUTERIUM-----/
-	  cuts_loop=Phi_cut_S&&Pt2_cut_S&&Q2_cut_S&&Nu_cut&&xf_cut;
+	  	//----ACCEPTANCE FOR DEUTERIUM-----/
+	  	cuts_loop=Phi_cut_S&&Pt2_cut_S&&Q2_cut_S&&Nu_cut&&xf_cut;
 
-	  TH1F *data_histo = new TH1F("data_histo","",nbins,E_min,E_max);
-	  TH1F *thrown_histo = new TH1F("thrown_histo","",nbins,E_min,E_max);
-	  TH1F *reconstructed_histo = new TH1F("reconstructed_histo","",nbins,E_min,E_max);
+	  	TH1F *data_histo = new TH1F("data_histo","",nbins,E_min,E_max);
+	  	TH1F *thrown_histo = new TH1F("thrown_histo","",nbins,E_min,E_max);
+	  	TH1F *reconstructed_histo = new TH1F("reconstructed_histo","",nbins,E_min,E_max);
 
-	  data->Draw("Zh*Nu>>data_histo",cuts_loop&&Target_cutD,"goff");
-	  data_histo->Sumw2();
+	  	data->Draw("Zh*Nu>>data_histo",cuts_loop&&Target_cutD,"goff");
+	  	data_histo->Sumw2();
 
-	  thrown_D->Draw("Zh*Nu>>thrown_histo",cuts_loop,"goff");
-	  thrown_histo->Sumw2();
-	  /*TH1F *hDT = (TH1F*) thrown_histo->Clone();
-	  hDT->SetName(Form("thrown_histoD%d%d", Nu_bin, j));
-	  hDT->Write();*/
+	  	thrown_D->Draw("Zh*Nu>>thrown_histo",cuts_loop,"goff");
+	  	thrown_histo->Sumw2();
+	  	/*TH1F *hDT = (TH1F*) thrown_histo->Clone();
+	  	hDT->SetName(Form("thrown_histoD%d%d", Nu_bin, j));
+	  	hDT->Write();*/
 	   
-	  reconstructed_D->Draw("Zh*Nu>>reconstructed_histo",cuts_loop,"goff");
-	  reconstructed_histo->Sumw2();
-	  /*TH1F *hDR = (TH1F*) reconstructed_histo->Clone();
-	  hDR->SetName(Form("reconstructed_histoD%d%d", Nu_bin, j));
-	  hDR->Write();*/
+	  	reconstructed_D->Draw("Zh*Nu>>reconstructed_histo",cuts_loop,"goff");
+	  	reconstructed_histo->Sumw2();
+	  	/*TH1F *hDR = (TH1F*) reconstructed_histo->Clone();
+	  	hDR->SetName(Form("reconstructed_histoD%d%d", Nu_bin, j));
+	  	hDR->Write();*/
 	      
-	  TH1F *acceptance_histo = new TH1F("acceptance_histo","",nbins,E_min,E_max);
-	  acceptance_histo->Divide(reconstructed_histo,thrown_histo,1,1,"B");
-	  // Saving ACC histograms to file
-	  TH1F *hDA = (TH1F*) acceptance_histo->Clone();
-	  hDA->SetName(Form("acc_D_nubin%d_q2bin%d", Nu_bin, j));
-	  hDA->Write();
+	  	TH1F *acceptance_histo = new TH1F("acceptance_histo","",nbins,E_min,E_max);
+	  	acceptance_histo->Divide(reconstructed_histo,thrown_histo,1,1,"B");
+	  	// Saving ACC histograms to file
+	  	TH1F *hDA = (TH1F*) acceptance_histo->Clone();
+	  	hDA->SetName(Form("acc_D_nubin%d_q2bin%d", Nu_bin, j));
+	  	hDA->Write();
 	  
-	  TH1F *acceptance_correction_histo = new TH1F("acceptance_correction_histo","",nbins,E_min,E_max);
-	  acceptance_correction_histo->Divide(data_histo,acceptance_histo,1,1);
-	  /*TH1F *hDC = (TH1F*) acceptance_correction_histo->Clone();
-	  hDC->SetName(Form("acc_corr_D%d", Nu_bin));
-	  hDC->Write();
-	  */
-	  // Filling the Corrected Deuterium histogram
-	  D->Add(acceptance_correction_histo, 1);
-	  accD->Add(acceptance_histo, 1);
+	  	TH1F *acceptance_correction_histo = new TH1F("acceptance_correction_histo","",nbins,E_min,E_max);
+	  	acceptance_correction_histo->Divide(data_histo,acceptance_histo,1,1);
+	  	/*TH1F *hDC = (TH1F*) acceptance_correction_histo->Clone();
+	  	hDC->SetName(Form("acc_corr_D%d", Nu_bin));
+	  	hDC->Write();
+	  	*/
+	  	// Filling the Corrected Deuterium histogram
+	  	D->Add(acceptance_correction_histo, 1);
+	  	accD->Add(acceptance_histo, 1);
 
-	  delete acceptance_correction_histo;
-	  delete acceptance_histo;
-	  delete data_histo;
-	  delete thrown_histo;
-	  delete reconstructed_histo;
-	  //delete hDT;
-	  //delete hDR;
-	  delete hDA;
-	  //delete hDC;
+	  	delete acceptance_correction_histo;
+	  	delete acceptance_histo;
+	  	delete data_histo;
+	  	delete thrown_histo;
+	  	delete reconstructed_histo;
+	  	//delete hDT;
+	  	//delete hDR;
+	  	delete hDA;
+	  	//delete hDC;
 
-	  //---ACCEPTANCE FOR SOLID TARGET::::ENERGY SHIFT LOOP----//
-	  for(int shift = shift_min; shift <= shift_max; shift++){
+	  	//---ACCEPTANCE FOR SOLID TARGET::::ENERGY SHIFT LOOP----//
+	  	for(int shift = shift_min; shift <= shift_max; shift++){
 
 		    energy_shift = step_E*shift;
 
@@ -431,18 +431,18 @@ int main(int argc, char **argv){
 
 
 
-  //SAVING CORRECTED HISTOS
-  D->Write();
-  accD->Write();
+  	//SAVING CORRECTED HISTOS
+  	D->Write();
+  	accD->Write();
 
-  for(int i = shift_min; i<= shift_max; i++){
-   histograms[i]->Write();
-   acceptances[i]->Write();
-  }
+  	for(int i = shift_min; i<= shift_max; i++){
+   		histograms[i]->Write();
+   		acceptances[i]->Write();
+  	}
 
 
-  //-----------------CLOSING THE FILE-----------------------//
-  plots->Close();
+  	//-----------------CLOSING THE FILE-----------------------//
+  	plots->Close();
 
-  return 0;
+  	return 0;
 }

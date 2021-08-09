@@ -272,9 +272,9 @@ int main(int argc, char **argv)
 
   //  CREATING THE OUTPUT FILE
   #ifdef SMORAN
-    TFile *plots = new TFile(Form("output/SM1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
+    TFile *plots = new TFile(Form("acc/SM1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
   #else
-    TFile *plots = new TFile(Form("output/HH1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
+    TFile *plots = new TFile(Form("acc/HH1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
   #endif
 
   //--------CREATING HISTOGRAMS--------//
@@ -434,52 +434,6 @@ int main(int argc, char **argv)
    histograms[i]->Write();
    acceptances[i]->Write();
   }
-
-
-  /*
-  //Saving the Nu and dE bins used in analysis
-  TGraph* g_Ebins = new TGraph();
-  TGraph* g_Nubins = new TGraph();
-  TGraph* g_Xfcut = new TGraph();
-
-  g_Nubins->SetPoint(0,0,Nu_min);
-  g_Nubins->SetPoint(1,1,Nu_max);
-  g_Xfcut->SetPoint(0,0,limit_xf);
-
-  for(Int_t i_shift = 0; i_shift <= nshift_E; i_shift++){
-    energy_shift = step_E*i_shift; //In GeV // 1 MeV steps.
-    g_Ebins->SetPoint(i_shift,i_shift,energy_shift);
-  }
-  */
-
-   //----------------WRITE FINAL HISTOS-----------------------//
-   /*
-  TH1F *data_histo_final = new TH1F("data_histo_final","Data",nbins,E_min,E_max);
-  TH1F *reconstructed_histo_final = new TH1F("reconstructed_histo_final","Reconstruction",nbins,E_min,E_max);
-  TH1F *thrown_histo_final = new TH1F("thrown_histo_final","Thrown",nbins,E_min,E_max);
-
-  data->Draw("Zh*Nu>>data_histo_final",cuts_simulS,"goff");
-  data_histo_final->Write();
-
-  reconstructed->Draw("Zh*Nu>>reconstructed_histo_final",cuts_simulS,"goff");
-  reconstructed_histo_final->Write();
-
-  thrown->Draw("Zh*Nu>>thrown_histo_final",cuts_simulS,"goff");
-  thrown_histo_final->Write();
-  */
-
-  //g_Ebins->Write("g_Ebins");
-  //g_Nubins->Write("g_Nubins");
-  //g_Xfcut->Write("g_Xfcut");
-
-  //----------------DELETING FINAL HISTOS------------------//
-  //delete data_histo_final;
-  //delete reconstructed_histo_final;
-  //delete thrown_histo_final;
-  //delete g_Ebins;
-  //delete g_Nubins;
-  //delete g_Xfcut;
-
 
 
   //-----------------CLOSING THE FILE-----------------------//

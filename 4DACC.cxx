@@ -271,7 +271,7 @@ int main(int argc, char **argv){
 
 	//  CREATING THE OUTPUT FILE
 	#ifdef SMORAN
-	  TFile *plots = new TFile(Form("output/SM3Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
+	  TFile *plots = new TFile(Form("output/SM2Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
 	#else
 	  TFile *plots = new TFile(Form("output/HH2Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins),"RECREATE");
 	#endif
@@ -303,133 +303,143 @@ int main(int argc, char **argv){
 	
 	      	Phi_cut = Form("PhiPQ>%f && PhiPQ<%f", Phi_min + k*delta_Phi , Phi_min + (k+1)*delta_Phi);	
 
-		  	//----ACCEPTANCE FOR DEUTERIUM-----/
-		  	cuts_loop=Phi_cut_S&&Pt2_cut_S&&Q2_cut_S&&Nu_cut&&xf_cut;
+      		for (int l = 0; l < N_Pt2; l++){	
+      		
+  				#ifdef SMORAN
+	      			Pt2_cut = Form("Pt2>%f && Pt2<%f", Pt2_min + l*delta_Pt2 , Pt2_min + (l+1)*delta_Pt2);
+				#else
+  					Pt2_cut = Form("Pt*Pt>%f && Pt*Pt<%f", Pt2_min + l*delta_Pt2 , Pt2_min + (l+1)*delta_Pt2);
+				#endif
+      			
 
-		  	TH1F *data_histo = new TH1F("data_histo","",nbins,E_min,E_max);
-		  	TH1F *thrown_histo = new TH1F("thrown_histo","",nbins,E_min,E_max);
-		  	TH1F *reconstructed_histo = new TH1F("reconstructed_histo","",nbins,E_min,E_max);
+			  	//----ACCEPTANCE FOR DEUTERIUM-----/
+			  	cuts_loop=Phi_cut_S&&Pt2_cut_S&&Q2_cut_S&&Nu_cut&&xf_cut;
 
-		  	data->Draw("Zh*Nu>>data_histo",cuts_loop&&Target_cutD,"goff");
-		  	data_histo->Sumw2();
+			  	TH1F *data_histo = new TH1F("data_histo","",nbins,E_min,E_max);
+			  	TH1F *thrown_histo = new TH1F("thrown_histo","",nbins,E_min,E_max);
+			  	TH1F *reconstructed_histo = new TH1F("reconstructed_histo","",nbins,E_min,E_max);
 
-		  	thrown_D->Draw("Zh*Nu>>thrown_histo",cuts_loop,"goff");
-		  	thrown_histo->Sumw2();
-		  	/*TH1F *hDT = (TH1F*) thrown_histo->Clone();
-		  	hDT->SetName(Form("thrown_histoD%d%d", Nu_bin, j));
-		  	hDT->Write();*/
-		   
-		  	reconstructed_D->Draw("Zh*Nu>>reconstructed_histo",cuts_loop,"goff");
-		  	reconstructed_histo->Sumw2();
-		  	/*TH1F *hDR = (TH1F*) reconstructed_histo->Clone();
-		  	hDR->SetName(Form("reconstructed_histoD%d%d", Nu_bin, j));
-		  	hDR->Write();*/
-		      
-		  	TH1F *acceptance_histo = new TH1F("acceptance_histo","",nbins,E_min,E_max);
-		  	acceptance_histo->Divide(reconstructed_histo,thrown_histo,1,1,"B");
-		  	// Saving ACC histograms to file
-		  	TH1F *hDA = (TH1F*) acceptance_histo->Clone();
-		  	hDA->SetName(Form("acc_D_nubin%d_q2bin%d_phibin%d", Nu_bin, j, k));
-		  	hDA->Write();
-		  
-		  	TH1F *acceptance_correction_histo = new TH1F("acceptance_correction_histo","",nbins,E_min,E_max);
-		  	acceptance_correction_histo->Divide(data_histo,acceptance_histo,1,1);
-		  	/*TH1F *hDC = (TH1F*) acceptance_correction_histo->Clone();
-		  	hDC->SetName(Form("acc_corr_D%d", Nu_bin));
-		  	hDC->Write();
-		  	*/
-		  	// Filling the Corrected Deuterium histogram
-		  	D->Add(acceptance_correction_histo, 1);
-		  	accD->Add(acceptance_histo, 1);
+			  	data->Draw("Zh*Nu>>data_histo",cuts_loop&&Target_cutD,"goff");
+			  	data_histo->Sumw2();
 
-		  	delete acceptance_correction_histo;
-		  	delete acceptance_histo;
-		  	delete data_histo;
-		  	delete thrown_histo;
-		  	delete reconstructed_histo;
-		  	//delete hDT;
-		  	//delete hDR;
-		  	delete hDA;
-		 	//delete hDC;
+			  	thrown_D->Draw("Zh*Nu>>thrown_histo",cuts_loop,"goff");
+			  	thrown_histo->Sumw2();
+			  	/*TH1F *hDT = (TH1F*) thrown_histo->Clone();
+			  	hDT->SetName(Form("thrown_histoD%d%d", Nu_bin, j));
+			  	hDT->Write();*/
+			   
+			  	reconstructed_D->Draw("Zh*Nu>>reconstructed_histo",cuts_loop,"goff");
+			  	reconstructed_histo->Sumw2();
+			  	/*TH1F *hDR = (TH1F*) reconstructed_histo->Clone();
+			  	hDR->SetName(Form("reconstructed_histoD%d%d", Nu_bin, j));
+			  	hDR->Write();*/
+			      
+			  	TH1F *acceptance_histo = new TH1F("acceptance_histo","",nbins,E_min,E_max);
+			  	acceptance_histo->Divide(reconstructed_histo,thrown_histo,1,1,"B");
+			  	// Saving ACC histograms to file
+			  	TH1F *hDA = (TH1F*) acceptance_histo->Clone();
+			  	hDA->SetName(Form("acc_D_nubin%d_q2bin%d_phibin%d_ptbin%d", Nu_bin, j, k, l));
+			  	hDA->Write();
+			  
+			  	TH1F *acceptance_correction_histo = new TH1F("acceptance_correction_histo","",nbins,E_min,E_max);
+			  	acceptance_correction_histo->Divide(data_histo,acceptance_histo,1,1);
+			  	/*TH1F *hDC = (TH1F*) acceptance_correction_histo->Clone();
+			  	hDC->SetName(Form("acc_corr_D%d", Nu_bin));
+			  	hDC->Write();
+			  	*/
+			  	// Filling the Corrected Deuterium histogram
+			  	D->Add(acceptance_correction_histo, 1);
+			  	accD->Add(acceptance_histo, 1);
 
-		  	//---ACCEPTANCE FOR SOLID TARGET::::ENERGY SHIFT LOOP----//
-		  	for(int shift = shift_min; shift <= shift_max; shift++){
+			  	delete acceptance_correction_histo;
+			  	delete acceptance_histo;
+			  	delete data_histo;
+			  	delete thrown_histo;
+			  	delete reconstructed_histo;
+			  	//delete hDT;
+			  	//delete hDR;
+			  	delete hDA;
+			 	//delete hDC;
 
-			    energy_shift = step_E*shift;
+			  	//---ACCEPTANCE FOR SOLID TARGET::::ENERGY SHIFT LOOP----//
+			  	for(int shift = shift_min; shift <= shift_max; shift++){
 
-			    //Double_t W = TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2);
-			    //Double_t Pt = TMath::Sqrt(Pt2);
+				    energy_shift = step_E*shift;
 
-
-			    // XF MODIFIED CUT
-			    #ifdef SMORAN
-			      TCut xf_mod = Form("((Nu + 0.9385)*(TMath::Sqrt((P+%f)*(P+%f)-(P+%f)*(TMath::Sqrt(Pt2)/P)*(P+%f)*(TMath::Sqrt(Pt2)/P))-TMath::Sqrt(Q2+Nu*Nu)*(Zh+%f/Nu)*Nu/(Nu+0.9385))/TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2))/((TMath::Sqrt(TMath::Power(TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)*TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)-0.9392*0.9392+0.1395*0.1395,2)-4.*0.1395*0.1395*TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)*TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2))/2./TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)))>0.1", energy_shift, energy_shift, energy_shift, energy_shift, energy_shift);
-			    #else
-			      TCut xf_mod = Form("((Nu + 0.9385)*(TMath::Sqrt((P+%f)*(P+%f)-(P+%f)*(Pt/P)*(P+%f)*(Pt/P))-TMath::Sqrt(Q2+Nu*Nu)*(Zh+%f/Nu)*Nu/(Nu+0.9385))/W)/((TMath::Sqrt(TMath::Power(W*W-0.9392*0.9392+0.1395*0.1395,2)-4.*0.1395*0.1395*W*W)/2./W))>0.1", energy_shift, energy_shift, energy_shift, energy_shift, energy_shift);
-			    #endif
-
-			    cuts_loop=Q2_cut&&Nu_cut&&Phi_cut&&Pt2_cut&&xf_mod;   //NO OLVIDARSE EL XF MOD CUT
-			    //TCut cut = Q2_cut&&Nu_cut&&Target_cutS;
-
-			    TH1F *data_histo = new TH1F("data_histo","",nbins,E_min,E_max);
-			    TH1F *thrown_histo = new TH1F("thrown_histo","",nbins,E_min,E_max);
-			    TH1F *reconstructed_histo = new TH1F("reconstructed_histo","",nbins,E_min,E_max);
-
-			    //TH1F *Data_xF = new TH1F("Data_xF", "", nbins, -1.5,1.5);
-			    //data->Draw(Form("((Nu + 0.9385)*(TMath::Sqrt((P+%f)*(P+%f)-(P+%f)*(Pt/P)*(P+%f)*(Pt/P))-TMath::Sqrt(Q2+Nu*Nu)*(Zh+%f/Nu)*Nu/(Nu+0.9385))/W)/((TMath::Sqrt(TMath::Power(W*W-0.9392*0.9392+0.1395*0.1395,2)-4.*0.1395*0.1395*W*W)/2./W))>>Data_xF", energy_shift, energy_shift, energy_shift, energy_shift, energy_shift), cut, "goff");
-			    //Data_xF->Sumw2();
-			    //TH1F *Xf = (TH1F*) Data_xF->Clone();
-			    //Xf->SetName(Form("Xf_shift%d_%d%d", shift, Nu_bin, j));
-			    //Xf->Write();
-			     
-			    data->Draw(Form("(Nu*Zh)+%f>>data_histo", energy_shift), cuts_loop&&Target_cutS, "goff");
-			    data_histo->Sumw2();
-
-			    thrown_S->Draw(Form("(Nu*Zh)+%f>>thrown_histo", energy_shift), cuts_loop, "goff");
-			    thrown_histo->Sumw2();
-			    /*TH1F *hT = (TH1F*) thrown_histo->Clone();
-			    hT->SetName(Form("thrown_histo"+Nuclei_Type+"_shift%d_%d%d", shift, Nu_bin, j));
-			    hT->Write();*/
-			     
-			    reconstructed_S->Draw(Form("(Nu*Zh)+%f>>reconstructed_histo", energy_shift), cuts_loop, "goff");
-			    reconstructed_histo->Sumw2();
-			    /*TH1F *hR = (TH1F*) reconstructed_histo->Clone();
-			    hR->SetName(Form("reconstructed_histo"+Nuclei_Type+"_shift%d_%d%d", shift, Nu_bin, j));
-			    hR->Write();*/
-			     
-
-			    // HISTOGRAMAS WITH ACCEPTANCE
-
-			    TH1F *acc_histo = new TH1F("acc_histo", "", nbins, E_min, E_max);
-			    acc_histo->Divide(reconstructed_histo, thrown_histo, 1, 1, "B");
-			    TH1F *hA = (TH1F*) acc_histo->Clone();
-			    hA->SetName(Form("acc_"+Nuclei_Type+"_shift%d_nubin%d_q2bin%d_phibin%d", shift, Nu_bin, j, k));
-			    hA->Write();
-			    
-			    TH1F *acc_corr_histo = new TH1F("acc_corr_histo", "", nbins, E_min, E_max);
-			    acc_corr_histo->Divide(data_histo, acc_histo, 1, 1);
-			    /*TH1F *hC = (TH1F*) acc_corr_histo->Clone();
-			    hC->SetName(Form("acc_corrected"+Nuclei_Type+"_shift%d_nubin%d", shift,  Nu_bin));
-			    hC->Write();
-			    */
-
-			    // Filling corrected histograms
-			    histograms[shift]->Add(acc_corr_histo, 1);
-			    acceptances[shift]->Add(acc_histo, 1);
+				    //Double_t W = TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2);
+				    //Double_t Pt = TMath::Sqrt(Pt2);
 
 
-			    delete data_histo;
-			    delete thrown_histo;
-			    delete reconstructed_histo;
-			    delete acc_histo;
-			    delete acc_corr_histo;
-			    //delete hT;
-			    //delete hR;
-			    delete hA;
-			    //delete Xf;
-			    //delete Data_xF;
-			    //delete hC;
-		  	} // Closing Shifts
+				    // XF MODIFIED CUT
+				    #ifdef SMORAN
+				      TCut xf_mod = Form("((Nu + 0.9385)*(TMath::Sqrt((P+%f)*(P+%f)-(P+%f)*(TMath::Sqrt(Pt2)/P)*(P+%f)*(TMath::Sqrt(Pt2)/P))-TMath::Sqrt(Q2+Nu*Nu)*(Zh+%f/Nu)*Nu/(Nu+0.9385))/TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2))/((TMath::Sqrt(TMath::Power(TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)*TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)-0.9392*0.9392+0.1395*0.1395,2)-4.*0.1395*0.1395*TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)*TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2))/2./TMath::Sqrt(0.938272*0.938272 +2*0.938272*Nu -Q2)))>0.1", energy_shift, energy_shift, energy_shift, energy_shift, energy_shift);
+				    #else
+				      TCut xf_mod = Form("((Nu + 0.9385)*(TMath::Sqrt((P+%f)*(P+%f)-(P+%f)*(Pt/P)*(P+%f)*(Pt/P))-TMath::Sqrt(Q2+Nu*Nu)*(Zh+%f/Nu)*Nu/(Nu+0.9385))/W)/((TMath::Sqrt(TMath::Power(W*W-0.9392*0.9392+0.1395*0.1395,2)-4.*0.1395*0.1395*W*W)/2./W))>0.1", energy_shift, energy_shift, energy_shift, energy_shift, energy_shift);
+				    #endif
+
+				    cuts_loop=Q2_cut&&Nu_cut&&Phi_cut&&Pt2_cut&&xf_mod;   //NO OLVIDARSE EL XF MOD CUT
+				    //TCut cut = Q2_cut&&Nu_cut&&Target_cutS;
+
+				    TH1F *data_histo = new TH1F("data_histo","",nbins,E_min,E_max);
+				    TH1F *thrown_histo = new TH1F("thrown_histo","",nbins,E_min,E_max);
+				    TH1F *reconstructed_histo = new TH1F("reconstructed_histo","",nbins,E_min,E_max);
+
+				    //TH1F *Data_xF = new TH1F("Data_xF", "", nbins, -1.5,1.5);
+				    //data->Draw(Form("((Nu + 0.9385)*(TMath::Sqrt((P+%f)*(P+%f)-(P+%f)*(Pt/P)*(P+%f)*(Pt/P))-TMath::Sqrt(Q2+Nu*Nu)*(Zh+%f/Nu)*Nu/(Nu+0.9385))/W)/((TMath::Sqrt(TMath::Power(W*W-0.9392*0.9392+0.1395*0.1395,2)-4.*0.1395*0.1395*W*W)/2./W))>>Data_xF", energy_shift, energy_shift, energy_shift, energy_shift, energy_shift), cut, "goff");
+				    //Data_xF->Sumw2();
+				    //TH1F *Xf = (TH1F*) Data_xF->Clone();
+				    //Xf->SetName(Form("Xf_shift%d_%d%d", shift, Nu_bin, j));
+				    //Xf->Write();
+				     
+				    data->Draw(Form("(Nu*Zh)+%f>>data_histo", energy_shift), cuts_loop&&Target_cutS, "goff");
+				    data_histo->Sumw2();
+
+				    thrown_S->Draw(Form("(Nu*Zh)+%f>>thrown_histo", energy_shift), cuts_loop, "goff");
+				    thrown_histo->Sumw2();
+				    /*TH1F *hT = (TH1F*) thrown_histo->Clone();
+				    hT->SetName(Form("thrown_histo"+Nuclei_Type+"_shift%d_%d%d", shift, Nu_bin, j));
+				    hT->Write();*/
+				     
+				    reconstructed_S->Draw(Form("(Nu*Zh)+%f>>reconstructed_histo", energy_shift), cuts_loop, "goff");
+				    reconstructed_histo->Sumw2();
+				    /*TH1F *hR = (TH1F*) reconstructed_histo->Clone();
+				    hR->SetName(Form("reconstructed_histo"+Nuclei_Type+"_shift%d_%d%d", shift, Nu_bin, j));
+				    hR->Write();*/
+				     
+
+				    // HISTOGRAMAS WITH ACCEPTANCE
+
+				    TH1F *acc_histo = new TH1F("acc_histo", "", nbins, E_min, E_max);
+				    acc_histo->Divide(reconstructed_histo, thrown_histo, 1, 1, "B");
+				    TH1F *hA = (TH1F*) acc_histo->Clone();
+				    hA->SetName(Form("acc_"+Nuclei_Type+"_shift%d_nubin%d_q2bin%d_phibin%d_ptbin%d", shift, Nu_bin, j, k, l));
+				    hA->Write();
+				    
+				    TH1F *acc_corr_histo = new TH1F("acc_corr_histo", "", nbins, E_min, E_max);
+				    acc_corr_histo->Divide(data_histo, acc_histo, 1, 1);
+				    /*TH1F *hC = (TH1F*) acc_corr_histo->Clone();
+				    hC->SetName(Form("acc_corrected"+Nuclei_Type+"_shift%d_nubin%d", shift,  Nu_bin));
+				    hC->Write();
+				    */
+
+				    // Filling corrected histograms
+				    histograms[shift]->Add(acc_corr_histo, 1);
+				    acceptances[shift]->Add(acc_histo, 1);
+
+
+				    delete data_histo;
+				    delete thrown_histo;
+				    delete reconstructed_histo;
+				    delete acc_histo;
+				    delete acc_corr_histo;
+				    //delete hT;
+				    //delete hR;
+				    delete hA;
+				    //delete Xf;
+				    //delete Data_xF;
+				    //delete hC;
+			  	} // Closing Shifts
+			}// Closing Pt2
 		}//Closing the PhiPQ
   	}//Closing the Q2 
 
