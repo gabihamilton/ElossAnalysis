@@ -54,7 +54,7 @@ const Double_t E_min = 0.;
 const Double_t E_max = 2.5;  
 
 const double limit_xf = 0.1;         // Cut in xF
-const int nshift_E = 50;             // total number of shifts in Energy
+const int nshift_E = 49;             // total number of shifts in Energy
 const double step_E = 2.5/1000.0;    // size of energy shift
 //const Int_t nbins = 100;             // number of energy bins
 
