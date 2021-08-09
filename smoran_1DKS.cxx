@@ -1,4 +1,5 @@
-
+// KOLMOGOROV TEST FOR 1D ACCEPTANCE
+// USES 1D FIT FILES
   
 #define SMORAN 1
 
@@ -26,6 +27,8 @@
 #include "TRandom3.h"
 #include "TStyle.h"
 #include "TLatex.h"
+#include "TLine.h"
+#include "TGraphErrors.h"
 
 #include "TH2.h"
 #include "TGraph.h"
@@ -51,10 +54,14 @@ using namespace std;
 const double E_max = 2.0; 			// Minimum Energy
 const double E_min = 0.5;  			// Maximum Energy
 const double limit_xf = 0.1;		// xF cut
-const int nshift_E = 99;			// Number of shifts in Energy
+const int nshift_E = 50;			// Number of shifts in Energy
 const double step_E = 2.5/1000.0;	// Size of Shifts in Energy
 //const int nbins = 100;				// Number of Energy bins
 const double zcut = 0.7;
+
+const Double_t Q2_min = 1.;
+const Double_t Q2_max = 4.;
+const Int_t N_Q2= 6.;//6
 
 TString Nuclei_Type;
 Double_t energy_shift;
@@ -69,6 +76,28 @@ double Calculate_Modified_Xf(Float_t Shift, Float_t Nu, Float_t P, Float_t Pt, F
   	return xf;
 }
 
+void get_values(TGraph* graph, double& mean, double& sigma)
+{
+    graph->Fit("gaus");
+    auto fcn = graph->GetFunction("gaus");
+    mean = fcn->GetParameter(1);
+    sigma = fcn->GetParameter(2);
+
+        TCanvas* c = new TCanvas("c", "c", 600, 600);
+        graph->Draw("APEL");
+        graph->GetXaxis()->SetTitle("Shift");
+        graph->GetYaxis()->SetTitle("p_{0}"); //"-Log(p_{0})"
+        TLine* line_mean = new TLine(mean, 0, mean, graph->GetHistogram()->GetMaximum());
+        line_mean->Draw();
+        TLine* line_sigma_lo = new TLine(mean - sigma, 0, mean - sigma, graph->GetHistogram()->GetMaximum());
+        TLine* line_sigma_up = new TLine(mean + sigma, 0, mean + sigma, graph->GetHistogram()->GetMaximum());
+        line_sigma_lo->SetLineColor(kRed);
+        line_sigma_up->SetLineColor(kRed);
+        line_sigma_lo->Draw();
+        line_sigma_up->Draw();
+        c->SaveAs(Form("plot_qa__%s.png", graph->GetName())); 
+}
+
 
 int main(int argc, char *argv[]){
 
@@ -77,20 +106,24 @@ int main(int argc, char *argv[]){
   	Int_t nbins = atoi(argv[3]);
   	Int_t n = atoi(argv[4]);  // ORDER OF THE CHEBYSHEV FUNC
 
-	//double Nu_min = 3.2 + Nu_bin*((4.2-3.2)/N_Nu); 
-	//double Nu_max = Nu_min + (4.2-3.2)/N_Nu;
+  	//---- Setting Q2 bins ----//
+	double binQ2[N_Q2+1];
+	double delta_Q2 = (Q2_max-Q2_min)/N_Q2;
+	for (int h = 0; h < N_Q2; ++h){
+		binQ2[h]= Q2_min + h*delta_Q2;
+	}
 
 
 	cout << "The Nuclei type studied is " << Nuclei_Type << endl;
 	cout<< "The cut on Xf is " << limit_xf << endl;
 
 	//------Opening data files-----//
-	//TFile *file = new TFile(Form("/Users/gbibim/Documents/ElossAnalysis/chargedPions/" + Nuclei_Type + "_data.root"));
-	TFile *file = new TFile(Form("/user/b/brooksw/bruno/" + Nuclei_Type + "_data.root"));
+	TFile *file = new TFile(Form("/Users/gbibim/Documents/ElossAnalysis/chargedPions/" + Nuclei_Type + "_data.root"));
+	//TFile *file = new TFile(Form("/user/b/brooksw/bruno/" + Nuclei_Type + "_data.root"));
 
 	//-----Opening TTree----//
 
-	//------ Hayk's Tuples -----//
+	//------ Sebastián's Tuples -----//
 	TTree* tree = (TTree*)file->Get("ntuple_data");
 	//Reading Branches with appropiate variables. 
 	Float_t PID;
@@ -132,33 +165,29 @@ int main(int argc, char *argv[]){
 	tree->SetBranchAddress("deltaZ",&deltaZ);
 	//tree->SetBranchAddress("NmbPion",&NmbPion);
 
-	Int_t nentries = tree->GetEntries();
-	//Int_t nentries = 100000;
+	//Int_t nentries = tree->GetEntries();
+	Int_t nentries = 100000;
 
 	//-----Creating output file-----//	
-	TFile *fout = new TFile(Form("output/Z1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
+	TFile *fout = new TFile(Form("KS/Z1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
 
 	//-----Creating the Graphs for the Eloss Shift Values------//
-	TGraph *gElossKS = new TGraph();  //  Graph for Eloss values for the KS test
-	TGraph *gElossWKS = new TGraph(); //  Graph for Eloss values fot the Weighted KS test
-	TGraph *gElossKSb = new TGraph(); //  Graph for Eloss values for the Binned KS test
-	TGraph *gElossWKSb = new TGraph(); // Graph for Eloss values for the Binned Weighted KS test
-	TGraph *gElossAKSb = new TGraph(); // Graph for Eloss values for the Acceptance corrected KS test
+	TGraphErrors *gElossKS = new TGraphErrors();  //  Graph for Eloss values for the KS test
+	TGraphErrors *gElossWKS = new TGraphErrors(); //  Graph for Eloss values fot the Weighted KS test
+	TGraphErrors *gElossKSb = new TGraphErrors(); //  Graph for Eloss values for the Binned KS test
+	TGraphErrors *gElossWKSb = new TGraphErrors(); // Graph for Eloss values for the Binned Weighted KS test
+	TGraphErrors *gElossAKSb = new TGraphErrors(); // Graph for Eloss values for the Acceptance corrected KS test
 
 	vector<double> dataS;
 	vector<double> dataD;
 	vector<double> weightD;
 	vector<double> weightS;
 
-	// Parameters arrays for Fits
-	Double_t parD[n+1];
-	Double_t parS[n+1];
-
-	TFile *fileFit = new TFile(Form("output/OLDFIT1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
 
 	//--------Starting Loop Over Nu bins---------//
 	for(Int_t Nu_bin = 0; Nu_bin < N_Nu; Nu_bin++){
 
+		//----Setting Nu bins----//
 		double Nu_min = 3.2 + Nu_bin*((4.2-3.2)/N_Nu); 
 		double Nu_max = Nu_min + (4.2-3.2)/N_Nu;
 
@@ -171,22 +200,13 @@ int main(int argc, char *argv[]){
 		TGraph *gpKSb = new TGraph();     	// Graph for the Binned KS Test
 		TGraph *gpWKSb = new TGraph();    	// Graph for the Binned Weighted KS Test
 		TGraph *gpAKSb = new TGraph();      // Graph for the Accepted Binned KS Test
+ 
+		//----Opening Fit file----//
+		TFile *fit = new TFile(Form("fits/FIT1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins)); // Acceptance files
 
-/*
-		// Parameters arrays for Fits
-		Double_t parD[n+1];
-		Double_t parS[n+1];
-*/
-		// Fitting Functions
-		TF1 * funcD = (TF1*) gROOT->GetFunction(Form("chebyshev%d", n));
-		funcD->SetRange(E_min,E_max);
-		TF1 * funcS = (TF1*) gROOT->GetFunction(Form("chebyshev%d", n));
-		funcS->SetRange(E_min,E_max);
-
-		TFile *acc = new TFile(Form("output/SM1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d.root", N_Nu, Nu_bin, nbins)); // Acceptance files
 
 		//-----Histograms with Energy distribution-----//
-		TH1F *D = new TH1F("D","D",nbins,E_min,E_max);
+		TH1F *D = new TH1F(Form("D_Nu%d", Nu_bin),Form("D_Nu%d", Nu_bin),nbins,E_min,E_max);
 		D->Sumw2();
 		std::map<int,TH1F*> histograms;
 		for(int i = 0; i<= nshift_E; i++){
@@ -195,7 +215,7 @@ int main(int argc, char *argv[]){
 		}
 
 		//-----Histograms for Weighted Energy Distributions-----//
-		TH1F *DW = new TH1F("DW","DW",nbins,E_min,E_max);
+		TH1F *DW = new TH1F(Form("DW_Nu%d", Nu_bin),Form("DW_Nu%d", Nu_bin),nbins,E_min,E_max);
 		DW->Sumw2();
 		std::map<int,TH1F*> histogramsW;
 		for(int i = 0; i<= nshift_E; i++){
@@ -203,106 +223,34 @@ int main(int argc, char *argv[]){
 			histogramsW[i]->Sumw2();
 		}
 
-
-		//-------Fitting Deuterium:--------//
-		cout << "Fitting Deuterium" << endl;
-
-		TVirtualFitter::SetMaxIterations(100000);
-
-		TH1F *DAcc = (TH1F*)acc->Get("accD"); // Getting the right acc histogram
-
-		if (Nu_bin==0){
-			for (int i = 0; i <=n; ++i) funcD->SetParameter(i,1); 
-		}else{
-			funcD->SetParameters(parD);	
-		}
-
-
-		DAcc->Fit(funcD, "R");
-
-		funcD->GetParameters(&parD[0]);  // Saving Fit Parameters
-
-		Double_t chi = funcD->GetChisquare()/funcD->GetNDF();
-
-		while (chi>5){
-			funcD->SetParameters(parD);
-			DAcc->Fit(funcD, "R");
-			funcD->GetParameters(&parD[0]);  // Saving Fit Parameters
-			chi = funcD->GetChisquare()/funcD->GetNDF();
-		}
-
-		gStyle->SetOptFit(1);
-		DAcc->Draw();
-	
-		// Saving fit
-		fileFit->cd();
-		DAcc->SetName(Form("fitD_"+Nuclei_Type+"_nubin%d", Nu_bin));
-		DAcc->Write();
-
-
-		//--------LOOP OVER THE SHIFTS---------//
 		cout << "Starting loop over Shifts" << endl;
 		for (int shift = 0; shift <= nshift_E; ++shift){ 
 
 
-
-			// Starting Loop over Q2 for Solid Target
-
-   			cout << "Fitting the Solid Target Shift: " << shift << "  Nu bin: " << Nu_bin << endl;
-
-			TH1F *h = (TH1F*)acc->Get(Form("accNuclei_shift%d", shift)); // Getting the right acc histogram
-
-			if (shift==0){
-				for (int i = 0; i <=n; ++i) funcS->SetParameter(i,1); 
-			}else{
-				funcD->SetParameters(parS);
-			}
-
-   			TVirtualFitter::SetMaxIterations(100000);
-    		h->Fit(funcS, "R");
-
-    		funcS->GetParameters(&parS[0]);	  //saving parametes  		
-		    Double_t sol_chi = funcS->GetChisquare()/funcS->GetNDF();
-		    int count=0;
-			while (sol_chi>5){
-				funcS->SetParameters(parS);
-				h->Fit(funcS, "R");
-				funcS->GetParameters(&parS[0]);	
-				sol_chi = funcS->GetChisquare()/funcS->GetNDF();
-			}
-
-			gStyle->SetOptFit(1);
-			h->Draw();
-		
-			// Saving fit
-			fileFit->cd();
-			h->SetName(Form("fit_"+Nuclei_Type+"_nubin%d_shift%d", Nu_bin, shift));
-			h->Write();
-
 		   	cout << "Entering the loop over entries " << nentries << endl;
 
-		   	// Vectors for data and weights
-
 		   	double w1sum=0., w2sum=0.;
-
      		energy_shift = step_E*shift;      // is doing the right shift
 
 		    //-------Loop over the ENTRIES: Filling the histos and vectors--------//
 		    for(Int_t j=1; j<= nentries; j++){
 		     	if(j%5000000==0) cout<< "Processing event number " << j/1000000.0 << "M "<< endl;
+
 		      	tree->GetEntry(j);
 		      	//Apply Cuts bin in Nu
 		      	if(Nu > Nu_max || Nu < Nu_min) continue; 
-
 		      	if(PID!=211) continue; // && P<2.7 && T4<-0.6 && Nphe<15) continue;
 
+				//cout <<"OK"<<endl;
 		      	//if ( (T4>0.45 && P>3.3) || (T4>0.5 && P<3.3)) continue;
 
 		    	// Deuterium
 		      	if(TargType==1 && Xf>limit_xf && Zh*Nu<E_max && Zh*Nu>E_min && Zh<zcut){
 
-		        	funcD->SetParameters(parD);
-		        	double w = 1./(funcD->Eval(Zh*Nu, 0, 0));
+		      		TH1F* DAcc = (TH1F*)fit->Get(Form("fitD_"+Nuclei_Type+"_nubin%d", Nu_bin));
+		 			auto fncD = (TF1*)DAcc->GetFunction(Form("chebyshev%d", n));
+
+		        	double w = 1./(fncD->Eval(Zh*Nu, 0, 0));
 
 					dataD.push_back(Zh*Nu);    	// Unbinned KS
 		      		weightD.push_back(w);		// Weighted Unbinned
@@ -319,8 +267,10 @@ int main(int argc, char *argv[]){
 		        	double Xf_Nuclei = Calculate_Modified_Xf(energy_shift, Nu, P, Pt,  Q2,  W, Zh);
 		        	if(Xf_Nuclei>limit_xf){
 
-		          		funcS->SetParameters(parS);
-		        		double w = 1./(funcS->Eval(Zh*Nu+energy_shift, 0, 0));  //weight for E value
+			      		TH1F* h = (TH1F*)fit->Get(Form("fit_"+Nuclei_Type+"_shift%d_nubin%d", shift, Nu_bin));
+			 			auto fncS = (TF1 *)h->GetFunction(Form("chebyshev%d", n));
+
+		        		double w = 1./(fncS->Eval(Zh*Nu+energy_shift, 0, 0));  //weight for E value
 
 		          		dataS.push_back((Zh*Nu)+energy_shift); 	 	 	// Unbinned KS
 		      			weightS.push_back(w);						// Weighted Unbinned
@@ -330,33 +280,22 @@ int main(int argc, char *argv[]){
 		        	}                                                
 		      	}
 	    	}
-
 	    	cout<< "END LOOP OVER ENTRIES" << endl;
-
+	    	
 		    //-----Binned Kolmogorov-Smirnov Test-----//
 		    D->Scale(1.0/D->Integral());
 		    histograms[shift]->Scale(1.0/histograms[shift]->Integral());
 		    //double pCSbinned = D->Chi2Test(histograms[i], "NORM");
 		    double pKSbinned = D->KolmogorovTest(histograms[shift], "D");
 		    //gpKSb->SetPoint(i, i, -1*TMath::Log10(pKSbinned));
-		    gpKSb->SetPoint(shift, energy_shift, pKSbinned);
-/*
-		    //-----Accepted Corrected Binned Kolmogorov-Smirnov Test-----//
-		    TH1F *Acc = (TH1F*)acc->Get("accD"); // Getting the right acc histogram
-		    Acc->Scale(1.0/Acc->Integral());
-		    TH1F *Target = (TH1F*)acc->Get(Form("accNuclei_shift%d", shift));
-		    Target->Scale(1.0/Target->Integral());
-		    //double pCSbinned = D->Chi2Test(histograms[i], "NORM");
-		    double ApKSbinned = Acc->KolmogorovTest(Target, "D");
-		    //gpKSb->SetPoint(i, i, -1*TMath::Log10(pKSbinned));
-		    gpAKSb->SetPoint(shift, shift, ApKSbinned);
-*/
+		    gpKSb->SetPoint(shift, energy_shift*1000, pKSbinned);
+
 		    //-----Binned Weighted KS Test-----//
 		    DW->Scale(1.0/DW->Integral());
 		    histogramsW[shift]->Scale(1.0/histogramsW[shift]->Integral());
 		    double pWKSbinned = DW->KolmogorovTest(histogramsW[shift], "D");
 		    //gWpKSb->SetPoint(i, i, -1*TMath::Log10(WpKSbinned));
-		    gpWKSb->SetPoint(shift, energy_shift, pWKSbinned);	
+		    gpWKSb->SetPoint(shift, energy_shift*1000, pWKSbinned);	
 
 
 		    //--------Unbinned Tests--------//
@@ -379,7 +318,7 @@ int main(int argc, char *argv[]){
 		    //----------UNBINNED KOLMOGOROV TEST----------//
 		    double pKS = TMath::KolmogorovTest(nD, &dataD[0], nS, &dataS[0], "D");
 		    //gpKS->SetPoint(i, i, -1*TMath::Log10(pKS));
-		    gpKS->SetPoint(shift, energy_shift, pKS);
+		    gpKS->SetPoint(shift, energy_shift*1000, pKS);
 
 
 		    //Double_t w1sum = std::accumulate(weightD.begin(), weightD.end(), 0);
@@ -387,7 +326,7 @@ int main(int argc, char *argv[]){
 
 		    //cout << w1sum << "   " << nD << endl;
 
-		    //WEIGHTED KOLMOGOROV TEST :: ROOT IMPLEMENTATION
+		    //----------WEIGHTED KOLMOGOROV TEST :: ROOT IMPLEMENTATION----------//
 	        Double_t rdiff = 0;
     		Double_t rdmax = 0;
 		    Bool_t ok = kFALSE;
@@ -429,7 +368,7 @@ int main(int argc, char *argv[]){
 		    	Double_t z = rdmax * TMath::Sqrt(nD*nS/(nD+nS));
        			double pWKS = TMath::KolmogorovProb(z);
        			//gpKS->SetPoint(i, i, -1*TMath::Log10(pKS));
-		    	gpWKS->SetPoint(shift, energy_shift, pWKS);
+		    	gpWKS->SetPoint(shift, energy_shift*1000, pWKS);
 		    }
 			dataS.clear();
 		   	dataD.clear();
@@ -440,34 +379,39 @@ int main(int argc, char *argv[]){
 	  	std::cout<< "END LOOP OVER SHIFTS" << std::endl;
 
 		//--------Statistical Tests Graphs--------//
-		gpKS->SetName(Form("pKS_"+Nuclei_Type+"_nubin%d", Nu_bin));
-		gpWKS->SetName(Form("pWKS_"+Nuclei_Type+"_nubin%d", Nu_bin));
-		gpKSb->SetName(Form("pKSb_"+Nuclei_Type+"_nubin%d", Nu_bin));
-		gpWKSb->SetName(Form("pWKSb_"+Nuclei_Type+"_nubin%d", Nu_bin));
-
-		gpKS->SetLineColor(4);   
-		gpWKS->SetLineColor(1);
-		gpKSb->SetLineColor(6); 
-		gpWKSb->SetLineColor(2);
-
-		gpKS->SetLineWidth(3);
-		gpWKS->SetLineWidth(3);
-		gpWKS->SetLineStyle(9);
-		gpKSb->SetLineWidth(3);
-		gpWKSb->SetLineWidth(3);
-		gpWKSb->SetLineStyle(9);
-
-		gpKS->SetTitle("Unbinned KS");
-		gpWKS->SetTitle("Weighted Unbinned KS");
-		gpKSb->SetTitle("Binned KS");
-		gpWKSb->SetTitle("Weighted Binned KS");
-
 		fout->cd();
+
+		// Unbinned KS
+		gpKS->SetName(Form("pKS_"+Nuclei_Type+"_nubin%d", Nu_bin));
+		gpKS->SetLineColor(4);   
+		gpKS->SetLineWidth(3);
+		gpKS->SetTitle("Unbinned KS");
 		gpKS->Write();
-		gpWKS->Write();
+
+		//Binned KS
+		gpKSb->SetName(Form("pKSb_"+Nuclei_Type+"_nubin%d", Nu_bin));
+		gpKSb->SetLineColor(2); 
+		gpKSb->SetLineWidth(3);
+		gpKSb->SetTitle("Binned KS");
 		gpKSb->Write();
+
+		//Corrected Unbinned KS
+		gpWKS->SetName(Form("pWKS_"+Nuclei_Type+"_nubin%d", Nu_bin));
+		gpWKS->SetLineColor(6);
+		gpWKS->SetLineWidth(3);
+		//gpWKS->SetLineStyle(9);
+		gpWKS->SetTitle("Corrected Unbinned KS");
+		gpWKS->Write();
+
+		//Corrected Binned KS
+		gpWKSb->SetName(Form("pWKSb_"+Nuclei_Type+"_nubin%d", Nu_bin));
+		gpWKSb->SetLineColor(1);
+		gpWKSb->SetLineWidth(3);
+		//gpWKSb->SetLineStyle(9);
+		gpWKSb->SetTitle("Corrected Binned KS");
 		gpWKSb->Write();
 
+		
 		TCanvas *canvas = new TCanvas();
 		TMultiGraph *multi = new TMultiGraph();
 		multi->Add(gpKS, "L");
@@ -483,9 +427,12 @@ int main(int argc, char *argv[]){
 		multi->GetYaxis()->SetTitle("p_{0}"); //"-Log(p_{0})"
 		
 		canvas->BuildLegend();
-		canvas->SaveAs(Form("output/ZProb_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max*100), n, nbins));
-		canvas->SaveAs(Form("output/ZProb_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.C", N_Nu, Nu_bin, nentries, int(E_min), int(E_max*100), n, nbins));
+		canvas->SaveAs(Form("KS/Z1DProb_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, n, nbins));
+		canvas->SaveAs(Form("KS/Z1DProb_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.C", N_Nu, Nu_bin, nentries, n, nbins));
 	
+
+
+
 		//-----ELOSS HISTOGRAMS PLOTS-----//
 		
 		Double_t elossKS=0;
@@ -540,15 +487,17 @@ int main(int argc, char *argv[]){
 			histogramsW[d]->Write();
 		}
 
-		TCanvas *Chu = new TCanvas();
 
-		D->SetName(Form("D_%d", Nu_bin));
-		D->SetTitle(Form("Energy for Target "+Nuclei_Type+" Nu bin %d", Nu_bin));
-		D->SetLineColor(9);
-		D->Draw("HIST L P");
+		//D->SetTitle(Form("Energy for Target "+Nuclei_Type+" Nu bin %d", Nu_bin));
+		D->SetLineColor(4);	
+		D->Write();	
+		//D->SetTitle("Deuterium");
+		DW->SetLineColor(4);
+		DW->Write();
+		//DW->SetTitle("Corrected Deuter")
+		//D->Draw("C");
 		//D->SetMarkerColor(9);
 		//D->SetMarkerStyle(33);
-		D->Write();
 
 		histograms[i_KS]->SetName(Form("KS_%d", Nu_bin));
 		TH1F *KS = (TH1F*) histograms[i_KS]->Clone();
@@ -562,39 +511,65 @@ int main(int argc, char *argv[]){
 		histogramsW[i_WKSb]->SetName(Form("WKSb_%d", Nu_bin));
 		TH1F *WKSb = (TH1F*) histograms[i_WKSb]->Clone();
 
-		KS->SetLineColor(4);
-		KS->SetMarkerColor(4);
-		KS->SetMarkerStyle(20);
-		KS->Draw("HIST same L P");
+		TCanvas *C1 = new TCanvas();
+		KS->SetLineColor(2);
+		KS->SetTitle(Form("Unbinned KS Match, Nu bin %d", Nu_bin));
+		D->SetStats(0);
+		//KS->SetMarkerColor(4);
+		//KS->SetMarkerStyle(20);
+		KS->SetStats(0);
+		KS->Draw("C");
+		D->Draw("Csame");
+		//C1->BuildLegend();
+		C1->SaveAs(Form("KS/Z1D_KSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, n, nbins));
+		C1->SaveAs(Form("KS/Z1D_KSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.C", N_Nu, Nu_bin, nentries, n, nbins));
 
-		WKS->SetName(Form("WKS_%d", Nu_bin));
-		WKS->SetLineColor(1);
-		WKS->SetMarkerColor(1);
-		WKS->SetMarkerStyle(30);
-		WKS->Draw("HIST same L P");
+		TCanvas *C2 = new TCanvas();
+		KSb->SetLineColor(2);
+		KSb->SetTitle(Form("Binned KS Match, Nu bin %d", Nu_bin));
+		//KS->SetMarkerColor(4);
+		//KS->SetMarkerStyle(20);
+		D->SetStats(0);
+		KSb->SetStats(0);
+		KSb->Draw("C");
+		D->Draw("Csame");
+		//C2->BuildLegend();
+		C2->SaveAs(Form("KS/Z1D_KSbMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, n, nbins));
+		C2->SaveAs(Form("KS/Z1D_KSbMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.C", N_Nu, Nu_bin, nentries, n, nbins));
 
-		KSb->SetName(Form("KSb_%d", Nu_bin));
-		KSb->SetLineColor(6);
-		KSb->SetMarkerColor(6);
-		KSb->SetMarkerStyle(22);
-		KSb->Draw("HIST same L P");
+		TCanvas *C3 = new TCanvas();
+		WKS->SetLineColor(2);
+		WKS->SetTitle(Form("Corrected Unbinned KS Match, Nu bin %d", Nu_bin));
+		//KS->SetMarkerColor(4);
+		//KS->SetMarkerStyle(20);
+		D->SetStats(0);
+		WKS->SetStats(0);
+		WKS->Draw("C");
+		DW->Draw("Csame");
+		//C3->BuildLegend();
+		C3->SaveAs(Form("KS/Z1D_WKSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, n, nbins));
+		C3->SaveAs(Form("KS/Z1D_WKSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.C", N_Nu, Nu_bin, nentries, n, nbins));
 
-		WKSb->SetName(Form("WKSb_%d", Nu_bin));
+		TCanvas *C4 = new TCanvas();
 		WKSb->SetLineColor(2);
-		WKSb->SetMarkerColor(2);
-		WKSb->SetMarkerStyle(23);
-		WKSb->Draw("HIST same L P");
+		WKSb->SetTitle(Form("Corrected Binned KS Match, Nu bin %d", Nu_bin));
+		//KS->SetMarkerColor(4);
+		//KS->SetMarkerStyle(20);
+		D->SetStats(0);
+		WKSb->SetStats(0);
+		WKSb->Draw("C");
+		DW->Draw("Csame");
+		C4->BuildLegend();
+		C4->SaveAs(Form("KS/Z1D_WKSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, n, nbins));
+		C4->SaveAs(Form("KS/Z1D_WKSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.C", N_Nu, Nu_bin, nentries, n, nbins));
 
 		fout->cd();
 
-		DW->SetName(Form("Weighted_D_%d", Nu_bin));
-		DW->Write();
-		D->Write();
 		KS->Write();
 		KSb->Write();
 		WKS->Write();
 		WKSb->Write();
-
+		/*
 		auto legend = new TLegend(0.3, 0.1, .5, .3, Form(Nuclei_Type+" Target, Nu bin %d", Nu_bin), "brNDC");
 	 
 	   	legend->SetNColumns(1);
@@ -608,18 +583,41 @@ int main(int argc, char *argv[]){
 	   	legend->Draw();
 
 		//Chu->BuildLegend();
-		Chu->SaveAs(Form("output/ZEnergy_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max), n, nbins));
-		Chu->SaveAs(Form("output/ZEnergy_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.C", N_Nu, Nu_bin, nentries, int(E_min), int(E_max), n, nbins));
+		Chu->SaveAs(Form("output/2dZEnergy_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, int(E_min), int(E_max), n, nbins));
+		Chu->SaveAs(Form("output/2dZEnergy_"+Nuclei_Type+"_%dnubin%d_%dentries_%dEcut%d_cheb%d_Ebins%d.C", N_Nu, Nu_bin, nentries, int(E_min), int(E_max), n, nbins));
 		
 
 		//DAcc->SetName(Form("Acc_Corr_D_%d", Nu_bin));
 		//DAcc->Write();
-
+		*/
 	    //------- ELOSS GRAPHS -------//
-	    gElossKS->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_KS);
-	    gElossWKS->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_WKS);
-	    gElossKSb->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_KSb);
-	    gElossWKSb->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_WKSb);
+
+	    double mean=0., sigma=0.;
+
+	    gElossKS->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_KS*energy_shift*1000);
+	    get_values(gpKS, mean, sigma);
+	    gElossKSb->SetPointError(Nu_bin, 0, sigma);
+	    mean=0.;
+	    sigma=0.;
+
+	    gElossKSb->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_KSb*energy_shift*1000);
+	    get_values(gpKS, mean, sigma);
+	    gElossKSb->SetPointError(Nu_bin, 0, sigma);
+	    mean=0.;
+	    sigma=0.;
+
+
+	    gElossWKS->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_WKS*energy_shift*1000);
+	    get_values(gpWKS, mean, sigma);
+	    gElossKSb->SetPointError(Nu_bin, 0, sigma);
+	    mean=0.;
+	    sigma=0.;
+
+	    gElossWKSb->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_WKSb*energy_shift*1000);
+	    get_values(gpWKSb, mean, sigma);
+	    gElossKSb->SetPointError(Nu_bin, 0, sigma);
+	    mean=0.;
+	    sigma=0.;
 	}//  END OF LOOP OVER NU BINS
 
 
@@ -627,28 +625,33 @@ int main(int argc, char *argv[]){
 	
 	//  ELOSS PLOTS  //
 	gElossKS->SetName(Form("ElossKS_"+Nuclei_Type));
-	gElossWKS->SetName(Form("ElossWKS_"+Nuclei_Type));
-	gElossKSb->SetName(Form("ElossKSb_"+Nuclei_Type));
-	gElossWKSb->SetName(Form("ElossWKS_"+Nuclei_Type));
-
-	gElossKS->SetMarkerColor(4);    
-	gElossWKS->SetMarkerColor(1);
-	gElossKSb->SetMarkerColor(6);   
-	gElossWKSb->SetMarkerColor(2);
-
+	gElossKS->SetMarkerColor(4); 
+	gElossKS->SetLineColor(4);
 	gElossKS->SetMarkerStyle(20);
-	gElossWKS->SetMarkerStyle(30);
-	gElossKSb->SetMarkerStyle(22);
-	gElossWKSb->SetMarkerStyle(23);
-
 	gElossKS->SetTitle("Unbinned KS");
-	gElossWKS->SetTitle("Weighted Unbinned KS");
-	gElossKSb->SetTitle("Binned KS");
-	gElossWKSb->SetTitle("Weighted Binned KS");
-
 	gElossKS->Write();
-	gElossWKS->Write();
+
+
+	gElossKSb->SetName(Form("ElossKSb_"+Nuclei_Type));
+	gElossKSb->SetMarkerColor(2);  
+	gElossKSb->SetLineColor(2);
+	gElossKSb->SetMarkerStyle(22);
+	gElossKSb->SetTitle("Binned KS");
 	gElossKSb->Write();
+
+	gElossWKS->SetName(Form("ElossWKS_"+Nuclei_Type));
+	gElossWKS->SetMarkerColor(6); 
+	gElossWKS->SetLineColor(6);
+	gElossWKS->SetMarkerStyle(30);
+	gElossWKS->SetTitle("Corrected Unbinned KS");
+	gElossWKS->Write();
+
+
+	gElossWKSb->SetName(Form("ElossWKS_"+Nuclei_Type));
+	gElossWKSb->SetMarkerColor(1);
+	gElossWKSb->SetLineColor(1);
+	gElossWKSb->SetMarkerStyle(23);
+	gElossWKSb->SetTitle("Corrected Binned KS");
 	gElossWKSb->Write();
 
 	TCanvas *canvas = new TCanvas();
@@ -667,8 +670,8 @@ int main(int argc, char *argv[]){
 	multi->GetYaxis()->SetTitle("dE [MeV]"); 
 
 	canvas->BuildLegend();
-	canvas->SaveAs(Form("output/ZEloss_"+Nuclei_Type+"_%dnubins_%dentries_%dEcut%d_cheb%d_Ebins%d.pdf", N_Nu, nentries, int(E_min), int(E_max), n, nbins));
-	canvas->SaveAs(Form("output/ZEloss_"+Nuclei_Type+"_%dnubins_%dentries_%dEcut%d_cheb%d_Ebins%d.C", N_Nu, nentries, int(E_min), int(E_max), n, nbins));
+	canvas->SaveAs(Form("KS/Z1DEloss_"+Nuclei_Type+"_%dnubins_%dentries_cheb%d_Ebins%d.pdf", N_Nu, nentries, n, nbins));
+	canvas->SaveAs(Form("KS/Z1DEloss_"+Nuclei_Type+"_%dnubins_%dentries_cheb%d_Ebins%d.C", N_Nu, nentries, n, nbins));
 	//canvas->Write();
 
 	std::cout<<" ABOUT TO CLOSE " << std::endl;
