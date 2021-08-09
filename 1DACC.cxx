@@ -272,9 +272,9 @@ int main(int argc, char **argv)
 
   //  CREATING THE OUTPUT FILE
   #ifdef SMORAN
-    TFile *plots = new TFile(Form("acc/SM1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d_step%f.root", N_Nu, Nu_bin, nbins, step*1000),"RECREATE");
+    TFile *plots = new TFile(Form("acc/SM1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d_step%f.root", N_Nu, Nu_bin, nbins, step_E*1000),"RECREATE");
   #else
-    TFile *plots = new TFile(Form("acc/HH1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d_step%f.root", N_Nu, Nu_bin, nbins, step*1000),"RECREATE");
+    TFile *plots = new TFile(Form("acc/HH1Dfout_"+Nuclei_Type+"_%dnubin%d_Ebins%d_step%f.root", N_Nu, Nu_bin, nbins, step_E*1000),"RECREATE");
   #endif
 
   //--------CREATING HISTOGRAMS--------//
