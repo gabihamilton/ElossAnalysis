@@ -169,7 +169,7 @@ int main(int argc, char *argv[]){
 	//Int_t nentries = 100000;
 
 	//-----Creating output file-----//	
-	TFile *fout = new TFile(Form("KS/Z1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d_step%f.root", N_Nu, n, nbins, step*1000), "RECREATE");
+	TFile *fout = new TFile(Form("KS/Z1D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d_step%f.root", N_Nu, n, nbins, step_E*1000), "RECREATE");
 
 	//-----Creating the Graphs for the Eloss Shift Values------//
 	TGraphErrors *gElossKS = new TGraphErrors();  //  Graph for Eloss values for the KS test
