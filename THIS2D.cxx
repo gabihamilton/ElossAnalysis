@@ -250,7 +250,7 @@ int main(int argc, char *argv[]){
 		    	// Deuterium
 		      	if(TargType==1 && Xf>limit_xf && Zh*Nu<E_max && Zh*Nu>E_min && Zh<zcut){
 
-		      		TH1F* DAcc = (TH1F*)fit->Get(Form("fitD_"+Nuclei_Type+"_nubin%d", Nu_bin));
+		      		TH1F* DAcc = (TH1F*)fit->Get(Form("fitD_"+Nuclei_Type+"_nubin%d_q2bin%d", Nu_bin, Q2_bin));
 		 			auto fncD = (TF1*)DAcc->GetFunction(Form("chebyshev%d", n));
 
 		        	double w = 1./(fncD->Eval(Zh*Nu, 0, 0));
@@ -270,7 +270,7 @@ int main(int argc, char *argv[]){
 		        	double Xf_Nuclei = Calculate_Modified_Xf(energy_shift, Nu, P, Pt,  Q2,  W, Zh);
 		        	if(Xf_Nuclei>limit_xf){
 
-			      		TH1F* h = (TH1F*)fit->Get(Form("fit_"+Nuclei_Type+"_shift%d_nubin%d", shift, Nu_bin));
+			      		TH1F* h = (TH1F*)fit->Get(Form("fit_"+Nuclei_Type+"_shift%d_nubin%d_q2bin%d", shift, Nu_bin, Q2_bin));
 			 			auto fncS = (TF1 *)h->GetFunction(Form("chebyshev%d", n));
 
 		        		double w = 1./(fncS->Eval(Zh*Nu+energy_shift, 0, 0));  //weight for E value
