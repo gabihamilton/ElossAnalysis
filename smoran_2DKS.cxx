@@ -116,8 +116,8 @@ int main(int argc, char *argv[]){
 	cout<< "The cut on Xf is " << limit_xf << endl;
 
 	//------Opening data files-----//
-	//TFile *file = new TFile(Form("/Users/gbibim/Documents/ElossAnalysis/chargedPions/" + Nuclei_Type + "_data.root"));
-	TFile *file = new TFile(Form("/user/b/brooksw/bruno/" + Nuclei_Type + "_data.root"));
+	TFile *file = new TFile(Form("/Users/gbibim/Documents/ElossAnalysis/chargedPions/" + Nuclei_Type + "_data.root"));
+	//TFile *file = new TFile(Form("/user/b/brooksw/bruno/" + Nuclei_Type + "_data.root"));
 
 	//-----Opening TTree----//
 
@@ -163,11 +163,11 @@ int main(int argc, char *argv[]){
 	tree->SetBranchAddress("deltaZ",&deltaZ);
 	//tree->SetBranchAddress("NmbPion",&NmbPion);
 
-	Int_t nentries = tree->GetEntries();
-	//Int_t nentries = 100000;
+	//Int_t nentries = tree->GetEntries();
+	Int_t nentries = 10000;
 
 	//-----Creating output file-----//	
-	TFile *fout = new TFile(Form("KS/Z2D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d_step%f.root", N_Nu, n, nbins, step_E*1000), "RECREATE");
+	TFile *fout = new TFile(Form("KS/2D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
 
 	//-----Creating the Graphs for the Eloss Shift Values------//
 	TGraphErrors *gElossKS = new TGraphErrors();  //  Graph for Eloss values for the KS test
@@ -199,7 +199,7 @@ int main(int argc, char *argv[]){
 		TGraph *gpAKSb = new TGraph();      // Graph for the Accepted Binned KS Test
  
 
-		TFile *fit = new TFile(Form("fits/FIT2D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d_step%f.root", N_Nu, n, nbins, step_E*1000)); // Acceptance files
+		TFile *fit = new TFile(Form("fits/FIT2D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins)); // Acceptance files
 
 
 		//-----Histograms with Energy distribution-----//
@@ -258,11 +258,11 @@ int main(int argc, char *argv[]){
 		        	//funcD->SetParameters(parD);
 		        	double w = 1./(fncD->Eval(Zh*Nu, 0, 0));
 
-					dataD.push_back(Zh*Nu);    	// Unbinned KS
-		      		weightD.push_back(w);		// Weighted Unbinned
+					//dataD.push_back(Zh*Nu);    	// Unbinned KS
+		      		//weightD.push_back(w);		// Weighted Unbinned
 		        	D->Fill(Zh*Nu);				// Binned KS
 		      		DW->Fill(Zh*Nu, w);			// Weighted Binned
-		      		w1sum = w1sum + w;
+		      		//w1sum = w1sum + w;
 		      	}
 
 		      	// Solid Target
@@ -278,11 +278,11 @@ int main(int argc, char *argv[]){
 
 		        		double w = 1./(fncS->Eval(Zh*Nu+energy_shift, 0, 0));  //weight for E value
 
-		          		dataS.push_back((Zh*Nu)+energy_shift); 	 	 	// Unbinned KS
-		      			weightS.push_back(w);						// Weighted Unbinned
+		          		//dataS.push_back((Zh*Nu)+energy_shift); 	 	 	// Unbinned KS
+		      			//weightS.push_back(w);						// Weighted Unbinned
 		          		histograms[shift]->Fill(Zh*Nu+energy_shift); 		// Binned KS
 		      			histogramsW[shift]->Fill(Zh*Nu+energy_shift, w);	// Weighted Binned
-		      			w2sum = w2sum + w;
+		      			//w2sum = w2sum + w;
 		        	}                                                
 		      	}
 	    	}
@@ -303,7 +303,7 @@ int main(int argc, char *argv[]){
 		    //gWpKSb->SetPoint(i, i, -1*TMath::Log10(WpKSbinned));
 		    gpWKSb->SetPoint(shift, energy_shift*1000, pWKSbinned);	
 
-
+/*
 		    //--------Unbinned Tests--------//
 
 	    	//--------Sorting vectors and filling energy Graphs-------//
@@ -375,7 +375,7 @@ int main(int argc, char *argv[]){
        			double pWKS = TMath::KolmogorovProb(z);
        			//gpKS->SetPoint(i, i, -1*TMath::Log10(pKS));
 		    	gpWKS->SetPoint(shift, energy_shift*1000, pWKS);
-		    }
+		    }*/
 			dataS.clear();
 		   	dataD.clear();
 		   	weightD.clear();
@@ -386,21 +386,21 @@ int main(int argc, char *argv[]){
 
 		//--------Statistical Tests Graphs--------//
 		fout->cd();
-
+/*
 		// Unbinned KS
 		gpKS->SetName(Form("pKS_"+Nuclei_Type+"_nubin%d", Nu_bin));
 		gpKS->SetLineColor(4);   
 		gpKS->SetLineWidth(3);
 		gpKS->SetTitle("Unbinned KS");
 		gpKS->Write();
-
+*/
 		//Binned KS
 		gpKSb->SetName(Form("pKSb_"+Nuclei_Type+"_nubin%d", Nu_bin));
 		gpKSb->SetLineColor(2); 
 		gpKSb->SetLineWidth(3);
 		gpKSb->SetTitle("Binned KS");
 		gpKSb->Write();
-
+/*
 		//Corrected Unbinned KS
 		gpWKS->SetName(Form("pWKS_"+Nuclei_Type+"_nubin%d", Nu_bin));
 		gpWKS->SetLineColor(6);
@@ -408,7 +408,7 @@ int main(int argc, char *argv[]){
 		//gpWKS->SetLineStyle(9);
 		gpWKS->SetTitle("Corrected Unbinned KS");
 		gpWKS->Write();
-
+*/
 		//Corrected Binned KS
 		gpWKSb->SetName(Form("pWKSb_"+Nuclei_Type+"_nubin%d", Nu_bin));
 		gpWKSb->SetLineColor(1);
@@ -420,8 +420,8 @@ int main(int argc, char *argv[]){
 		
 		TCanvas *canvas = new TCanvas();
 		TMultiGraph *multi = new TMultiGraph();
-		multi->Add(gpKS, "L");
-		multi->Add(gpWKS,"L");
+		//multi->Add(gpKS, "L");
+		//multi->Add(gpWKS,"L");
 		multi->Add(gpKSb,"L");
 		multi->Add(gpWKSb,"L");
 
@@ -433,26 +433,26 @@ int main(int argc, char *argv[]){
 		multi->GetYaxis()->SetTitle("p_{0}"); //"-Log(p_{0})"
 		
 		canvas->BuildLegend();
-		canvas->SaveAs(Form("KS/Z2DProb_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d_step%f.pdf", N_Nu, Nu_bin, nentries, n, nbins, step_E*1000));
-		canvas->SaveAs(Form("KS/Z2DProb_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d_step%f.C", N_Nu, Nu_bin, nentries, n, nbins, step_E*1000));
+		canvas->SaveAs(Form("KS/2D_Prob_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, n, nbins));
+		canvas->SaveAs(Form("KS/2D_Prob_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.C", N_Nu, Nu_bin, nentries, n, nbins));
 	
 
 
 
 		//-----ELOSS HISTOGRAMS PLOTS-----//
 		
-		Double_t elossKS=0;
-		Double_t elossWKS=0;
+		//Double_t elossKS=0;
+		//Double_t elossWKS=0;
 		Double_t elossKSb=0;
 		Double_t elossWKSb=0;
-		Int_t i_KS=0;
-		Int_t i_WKS=0;
+		//Int_t i_KS=0;
+		//Int_t i_WKS=0;
 		Int_t i_KSb=0;
 		Int_t i_WKSb=0;
 
 		for (int i = 0; i < nshift_E; ++i){
 			Double_t x, y;
-
+/*
 			gpKS->GetPoint(i, x, y);
 			if(y>elossKS){
 				elossKS=y;
@@ -464,7 +464,7 @@ int main(int argc, char *argv[]){
 				elossWKS=y;
 				i_WKS = i;
 			}
-
+*/
 			gpKSb->GetPoint(i, x, y);
 			if(y>elossKSb){
 				elossKSb=y;
@@ -478,8 +478,8 @@ int main(int argc, char *argv[]){
 			}
 
 		}
-		cout << "ELOSS VALUE FOR KS: " << i_KS << "   PROB: " << elossKS << endl;
-		cout << "ELOSS VALUE FOR WKS: " << i_WKS << "   PROB: " << elossWKS << endl;
+		//cout << "ELOSS VALUE FOR KS: " << i_KS << "   PROB: " << elossKS << endl;
+		//cout << "ELOSS VALUE FOR WKS: " << i_WKS << "   PROB: " << elossWKS << endl;
 		cout << "ELOSS VALUE FOR KSb: " << i_KSb << "   PROB: " << elossKSb << endl;
 		cout << "ELOSS VALUE FOR WKSb: " << i_WKSb << "   PROB: " << elossWKSb << endl;
 
@@ -504,19 +504,19 @@ int main(int argc, char *argv[]){
 		//D->Draw("C");
 		//D->SetMarkerColor(9);
 		//D->SetMarkerStyle(33);
-
+/*
 		histograms[i_KS]->SetName(Form("KS_%d", Nu_bin));
 		TH1F *KS = (TH1F*) histograms[i_KS]->Clone();
 
 		histogramsW[i_WKS]->SetName(Form("WKS_%d", Nu_bin));
 		TH1F *WKS = (TH1F*) histograms[i_WKS]->Clone();
-
+*/
 		histograms[i_KSb]->SetName(Form("KSb_%d", Nu_bin));
 		TH1F *KSb = (TH1F*) histograms[i_KSb]->Clone();
 
 		histogramsW[i_WKSb]->SetName(Form("WKSb_%d", Nu_bin));
-		TH1F *WKSb = (TH1F*) histograms[i_WKSb]->Clone();
-
+		TH1F *WKSb = (TH1F*) histogramsW[i_WKSb]->Clone();
+/*
 		TCanvas *C1 = new TCanvas();
 		KS->SetLineColor(2);
 		KS->SetTitle(Form("Unbinned KS Match, Nu bin %d", Nu_bin));
@@ -529,7 +529,7 @@ int main(int argc, char *argv[]){
 		//C1->BuildLegend();
 		C1->SaveAs(Form("KS/Z2D_KSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d_step%f.pdf", N_Nu, Nu_bin, nentries, n, nbins, step_E*1000));
 		C1->SaveAs(Form("KS/Z2D_KSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d_step%f.C", N_Nu, Nu_bin, nentries, n, nbins, step_E*1000));
-
+*/
 		TCanvas *C2 = new TCanvas();
 		KSb->SetLineColor(2);
 		KSb->SetTitle(Form("Binned KS Match, Nu bin %d", Nu_bin));
@@ -540,9 +540,9 @@ int main(int argc, char *argv[]){
 		KSb->Draw("C");
 		D->Draw("Csame");
 		//C2->BuildLegend();
-		C2->SaveAs(Form("KS/Z2D_KSbMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d_step%f.pdf", N_Nu, Nu_bin, nentries, n, nbins, step_E*1000));
-		C2->SaveAs(Form("KS/Z2D_KSbMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d_step%f.C", N_Nu, Nu_bin, nentries, n, nbins, step_E*1000));
-
+		C2->SaveAs(Form("KS/2D_KSbMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, n, nbins));
+		C2->SaveAs(Form("KS/2D_KSbMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.C", N_Nu, Nu_bin, nentries, n, nbins));
+/*
 		TCanvas *C3 = new TCanvas();
 		WKS->SetLineColor(2);
 		WKS->SetTitle(Form("Corrected Unbinned KS Match, Nu bin %d", Nu_bin));
@@ -555,25 +555,25 @@ int main(int argc, char *argv[]){
 		//C3->BuildLegend();
 		C3->SaveAs(Form("KS/Z2D_WKSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d_step%f.pdf", N_Nu, Nu_bin, nentries, n, nbins, step_E*1000));
 		C3->SaveAs(Form("KS/Z2D_WKSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d_step%f.C", N_Nu, Nu_bin, nentries, n, nbins, step_E*1000));
-
+*/
 		TCanvas *C4 = new TCanvas();
 		WKSb->SetLineColor(2);
 		WKSb->SetTitle(Form("Corrected Binned KS Match, Nu bin %d", Nu_bin));
 		//KS->SetMarkerColor(4);
 		//KS->SetMarkerStyle(20);
-		D->SetStats(0);
+		DW->SetStats(0);
 		WKSb->SetStats(0);
 		WKSb->Draw("C");
 		DW->Draw("Csame");
 		C4->BuildLegend();
-		C4->SaveAs(Form("KS/Z2D_WKSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d_step%f.pdf", N_Nu, Nu_bin, nentries, n, nbins, step_E*1000));
-		C4->SaveAs(Form("KS/Z2D_WKSMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d_step%f.C", N_Nu, Nu_bin, nentries, n, nbins, step_E*1000));
+		C4->SaveAs(Form("KS/2D_WKSbMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.pdf", N_Nu, Nu_bin, nentries, n, nbins));
+		C4->SaveAs(Form("KS/2D_WKSbMatch_"+Nuclei_Type+"_%dnubin%d_%dentries_cheb%d_Ebins%d.C", N_Nu, Nu_bin, nentries, n, nbins));
 
 		fout->cd();
 
-		KS->Write();
+		//KS->Write();
 		KSb->Write();
-		WKS->Write();
+		//WKS->Write();
 		WKSb->Write();
 		/*
 		auto legend = new TLegend(0.3, 0.1, .5, .3, Form(Nuclei_Type+" Target, Nu bin %d", Nu_bin), "brNDC");
@@ -599,27 +599,27 @@ int main(int argc, char *argv[]){
 	    //------- ELOSS GRAPHS -------//
 
 	    double mean=0., sigma=0.;
-
+/*
 	    gElossKS->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_KS*energy_shift*1000);
 	    get_values(gpKS, mean, sigma);
 	    gElossKSb->SetPointError(Nu_bin, 0, sigma);
 	    mean=0.;
 	    sigma=0.;
-
-	    gElossKSb->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_KSb*energy_shift*1000);
-	    get_values(gpKS, mean, sigma);
+*/
+	    gElossKSb->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_KSb);
+	    get_values(gpKSb, mean, sigma);
 	    gElossKSb->SetPointError(Nu_bin, 0, sigma);
 	    mean=0.;
 	    sigma=0.;
 
-
+/*
 	    gElossWKS->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_WKS*energy_shift*1000);
 	    get_values(gpWKS, mean, sigma);
 	    gElossKSb->SetPointError(Nu_bin, 0, sigma);
 	    mean=0.;
 	    sigma=0.;
-
-	    gElossWKSb->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_WKSb*energy_shift*1000);
+*/
+	    gElossWKSb->SetPoint(Nu_bin, (Nu_min+Nu_max)/2, i_WKSb);
 	    get_values(gpWKSb, mean, sigma);
 	    gElossKSb->SetPointError(Nu_bin, 0, sigma);
 	    mean=0.;
@@ -630,13 +630,14 @@ int main(int argc, char *argv[]){
 	fout->cd();
 	
 	//  ELOSS PLOTS  //
+	/*
 	gElossKS->SetName(Form("ElossKS_"+Nuclei_Type));
 	gElossKS->SetMarkerColor(4); 
 	gElossKS->SetLineColor(4);
 	gElossKS->SetMarkerStyle(20);
 	gElossKS->SetTitle("Unbinned KS");
 	gElossKS->Write();
-
+*/
 
 	gElossKSb->SetName(Form("ElossKSb_"+Nuclei_Type));
 	gElossKSb->SetMarkerColor(2);  
@@ -644,14 +645,14 @@ int main(int argc, char *argv[]){
 	gElossKSb->SetMarkerStyle(22);
 	gElossKSb->SetTitle("Binned KS");
 	gElossKSb->Write();
-
+/*
 	gElossWKS->SetName(Form("ElossWKS_"+Nuclei_Type));
 	gElossWKS->SetMarkerColor(6); 
 	gElossWKS->SetLineColor(6);
 	gElossWKS->SetMarkerStyle(30);
 	gElossWKS->SetTitle("Corrected Unbinned KS");
 	gElossWKS->Write();
-
+*/
 
 	gElossWKSb->SetName(Form("ElossWKS_"+Nuclei_Type));
 	gElossWKSb->SetMarkerColor(1);
@@ -662,8 +663,8 @@ int main(int argc, char *argv[]){
 
 	TCanvas *canvas = new TCanvas();
 	TMultiGraph *multi = new TMultiGraph();
-	multi->Add(gElossKS, "");
-	multi->Add(gElossWKS,"");
+	//multi->Add(gElossKS, "");
+	//multi->Add(gElossWKS,"");
 	multi->Add(gElossKSb,"");
 	multi->Add(gElossWKSb, "");
 
@@ -676,8 +677,8 @@ int main(int argc, char *argv[]){
 	multi->GetYaxis()->SetTitle("dE [MeV]"); 
 
 	canvas->BuildLegend();
-	canvas->SaveAs(Form("KS/Z2DEloss_"+Nuclei_Type+"_%dnubins_%dentries_cheb%d_Ebins%d_step%f.pdf", N_Nu, nentries, n, nbins, step_E*1000));
-	canvas->SaveAs(Form("KS/Z2DEloss_"+Nuclei_Type+"_%dnubins_%dentries_cheb%d_Ebins%d_step%f.C", N_Nu, nentries, n, nbins, step_E*1000));
+	canvas->SaveAs(Form("KS/2D_Eloss_"+Nuclei_Type+"_%dnubins_%dentries_cheb%d_Ebins%d.pdf", N_Nu, nentries, n, nbins));
+	canvas->SaveAs(Form("KS/2D_Eloss_"+Nuclei_Type+"_%dnubins_%dentries_cheb%d_Ebins%d.C", N_Nu, nentries, n, nbins));
 	//canvas->Write();
 
 	std::cout<<" ABOUT TO CLOSE " << std::endl;
