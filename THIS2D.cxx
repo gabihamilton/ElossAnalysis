@@ -117,8 +117,8 @@ int main(int argc, char *argv[]){
 	cout<< "The cut on Xf is " << limit_xf << endl;
 
 	//------Opening data files-----//
-	TFile *file = new TFile(Form("/Users/gbibim/Documents/ElossAnalysis/chargedPions/" + Nuclei_Type + "_data.root"));
-	//TFile *file = new TFile(Form("/user/b/brooksw/bruno/" + Nuclei_Type + "_data.root"));
+	//TFile *file = new TFile(Form("/Users/gbibim/Documents/ElossAnalysis/chargedPions/" + Nuclei_Type + "_data.root"));
+	TFile *file = new TFile(Form("/user/b/brooksw/bruno/" + Nuclei_Type + "_data.root"));
 
 	//-----Opening TTree----//
 
@@ -164,8 +164,8 @@ int main(int argc, char *argv[]){
 	tree->SetBranchAddress("deltaZ",&deltaZ);
 	//tree->SetBranchAddress("NmbPion",&NmbPion);
 
-	//Int_t nentries = tree->GetEntries();
-	Int_t nentries = 10000;
+	Int_t nentries = tree->GetEntries();
+	//Int_t nentries = 10000;
 
 	//-----Creating output file-----//	
 	TFile *fout = new TFile(Form("KS/final2D_"+Nuclei_Type+"_%dnubins_cheb%d_Ebins%d.root", N_Nu, n, nbins), "RECREATE");
